@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Committee & Event Budget Tracker</title>
-  <!-- QR Scanner Library -->
+  <!-- QR Code & Scanner Libraries -->
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
       --primary: #d9663b;
@@ -19,46 +20,49 @@
       --expense: #dc2626;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 40px; }
-    .header { background: #1e293b; color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .header h1 { font-size: 1.1rem; font-weight: 600; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 50px; }
+    .header { background: #1e293b; color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+    .header h1 { font-size: 1.05rem; font-weight: 600; }
     .badge { font-size: 0.75rem; background: var(--primary); padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-    .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+    .container { max-width: 650px; margin: 0 auto; padding: 16px; }
     .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 16px; }
     .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
     .stat-box { background: #f1f5f9; padding: 12px; border-radius: 8px; }
     .stat-title { font-size: 0.75rem; color: var(--subtext); text-transform: uppercase; font-weight: 600; }
     .stat-val { font-size: 1.25rem; font-weight: bold; margin-top: 4px; }
     .net-balance { grid-column: span 2; background: #fff7ed; border: 1px solid #ffedd5; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 10px 14px; border-radius: 8px; border: none; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-dark); }
-    .btn-secondary { background: #e2e8f0; color: #1e293b; margin-top: 8px; }
-    .btn-scanner { background: #0f172a; color: white; margin-top: 10px; }
+    .btn-danger { background: var(--expense); color: white; }
+    .btn-secondary { background: #e2e8f0; color: #1e293b; }
+    .btn-scanner { background: #0f172a; color: white; margin-top: 8px; }
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--subtext); }
-    .form-control { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; }
+    .form-control { width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; }
     .tx-item { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .tx-left h4 { font-size: 0.95rem; margin-bottom: 4px; }
     .tx-left p { font-size: 0.8rem; color: var(--subtext); }
     .tx-right { text-align: right; }
     .tx-amount { font-weight: bold; font-size: 1.05rem; }
     .tx-del { background: none; border: none; color: #ef4444; font-size: 0.8rem; cursor: pointer; margin-top: 4px; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-    .tab-btn { background: none; border: none; padding: 8px 16px; font-size: 0.9rem; font-weight: 600; color: var(--subtext); cursor: pointer; border-radius: 6px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .tab-btn { background: none; border: none; padding: 8px 14px; font-size: 0.9rem; font-weight: 600; color: var(--subtext); cursor: pointer; border-radius: 6px; }
     .tab-btn.active { background: #e2e8f0; color: var(--text); }
+    .actions-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
     .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    .spinner { width: 38px; height: 38px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); padding: 20px; z-index: 200; overflow-y: auto; display: flex; align-items: center; justify-content: center; }
   </style>
 </head>
 <body>
 
   <div id="loading" class="loading-overlay" style="display: none;">
     <div class="spinner"></div>
-    <p style="margin-top: 12px; font-weight: 600;" id="loadingText">Connecting to Budget...</p>
+    <p style="margin-top: 12px; font-weight: 600;" id="loadingText">Connecting...</p>
   </div>
 
   <div class="header">
@@ -83,7 +87,6 @@
         <button class="btn btn-primary" onclick="joinSheetManual()">Connect Event</button>
         <button class="btn btn-scanner" onclick="toggleQRScanner()">📷 Scan Event QR Code</button>
         
-        <!-- QR SCANNER CONTAINER -->
         <div id="scannerSection" style="display: none; margin-top: 15px;">
           <div id="reader"></div>
           <button class="btn btn-secondary btn-sm" onclick="stopQRScanner()">Close Camera</button>
@@ -91,10 +94,10 @@
       </div>
     </div>
 
-    <!-- SCREEN 2: LOGIN MODAL -->
+    <!-- SCREEN 2: LOGIN -->
     <div id="screenLogin" style="display: none;">
       <div class="card">
-        <h2 id="loginEventName" style="font-size: 1.15rem; color: var(--primary); margin-bottom: 14px; text-align: center;">Event Login</h2>
+        <h2 id="loginEventName" style="font-size: 1.2rem; color: var(--primary); margin-bottom: 14px; text-align: center;">Event Login</h2>
         <div class="form-group">
           <label>Username</label>
           <input type="text" id="loginUser" class="form-control" value="SUPERADMIN">
@@ -104,7 +107,7 @@
           <input type="password" id="loginPass" class="form-control" value="admin123">
         </div>
         <button class="btn btn-primary" onclick="submitLogin()">Login</button>
-        <button class="btn btn-secondary" onclick="showEventsScreen()">Back to Events</button>
+        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="showEventsScreen()">Back to Events</button>
       </div>
     </div>
 
@@ -126,23 +129,34 @@
         </div>
       </div>
 
-      <div style="margin: 16px 0; display: flex; gap: 8px;" id="adminActionsBar">
-        <button class="btn btn-primary btn-sm" onclick="showNewTxModal('INCOME')">+ Add Income</button>
-        <button class="btn btn-primary btn-sm" style="background: #dc2626;" onclick="showNewTxModal('EXPENSE')">+ Add Expense</button>
+      <!-- Action Buttons like Android App -->
+      <div class="actions-grid">
+        <button class="btn btn-primary btn-sm" onclick="showNewTxModal('INCOME')">+ Income</button>
+        <button class="btn btn-danger btn-sm" onclick="showNewTxModal('EXPENSE')">+ Expense</button>
+        <button class="btn btn-secondary btn-sm" onclick="openShareModal()">🔗 Share / QR</button>
+        <button class="btn btn-secondary btn-sm" onclick="openReportModal()">📊 Report</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Print / PDF</button>
         <button class="btn btn-secondary btn-sm" onclick="showEventsScreen()">Switch Event</button>
       </div>
 
+      <!-- Search Box -->
+      <div class="card" style="padding: 10px 14px; margin-bottom: 12px;">
+        <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search by Person, Head, Mode..." oninput="renderTransactions()">
+      </div>
+
+      <!-- Tabs -->
       <div class="tabs">
         <button class="tab-btn active" id="tabIncBtn" onclick="switchTxTab('INCOME')">Income Entries</button>
         <button class="tab-btn" id="tabExpBtn" onclick="switchTxTab('EXPENSE')">Expense Entries</button>
       </div>
 
+      <!-- Transaction List -->
       <div id="txContainer"></div>
     </div>
 
-    <!-- MODAL: ADD TRANSACTION -->
-    <div id="modalAddTx" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); padding: 20px; z-index: 100;">
-      <div class="card" style="margin-top: 40px;">
+    <!-- MODAL 1: ADD TRANSACTION -->
+    <div id="modalAddTx" class="modal-overlay" style="display: none;">
+      <div class="card" style="width: 100%; max-width: 480px;">
         <h3 id="modalTxTitle" style="margin-bottom: 14px;">Add Entry</h3>
         <div class="form-group">
           <label>Category / Head</label>
@@ -165,8 +179,33 @@
             <option>Cheque</option>
           </select>
         </div>
+        <div class="form-group">
+          <label>Bill / Receipt URL (Optional)</label>
+          <input type="text" id="modalTxBill" class="form-control" placeholder="Google Drive Image link">
+        </div>
         <button class="btn btn-primary" onclick="submitNewTransaction()">Save Entry</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('modalAddTx').style.display='none'">Cancel</button>
+        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="document.getElementById('modalAddTx').style.display='none'">Cancel</button>
+      </div>
+    </div>
+
+    <!-- MODAL 2: SHARE EVENT & QR CODE -->
+    <div id="modalShare" class="modal-overlay" style="display: none;">
+      <div class="card" style="width: 100%; max-width: 420px; text-align: center;">
+        <h3 style="margin-bottom: 12px;">📱 Share Event with Members</h3>
+        <div id="qrcodeCanvas" style="display: inline-block; margin: 10px auto; padding: 10px; background: white; border-radius: 8px; border: 1px solid var(--border);"></div>
+        <p style="font-size: 0.85rem; color: var(--subtext); margin-top: 8px;">Scan this QR code from another device to open this budget directly!</p>
+        <button class="btn btn-primary" style="background: #25D366; margin-top: 14px;" onclick="shareViaWhatsApp()">📲 Share on WhatsApp</button>
+        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="copyWebLink()">📋 Copy Direct Link</button>
+        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="document.getElementById('modalShare').style.display='none'">Close</button>
+      </div>
+    </div>
+
+    <!-- MODAL 3: CATEGORY-WISE SUMMARY REPORT -->
+    <div id="modalReport" class="modal-overlay" style="display: none;">
+      <div class="card" style="width: 100%; max-width: 500px;">
+        <h3 style="margin-bottom: 14px;">📊 Head-wise Summary</h3>
+        <div id="reportContainer"></div>
+        <button class="btn btn-secondary" style="margin-top: 14px;" onclick="document.getElementById('modalReport').style.display='none'">Close</button>
       </div>
     </div>
 
@@ -181,13 +220,12 @@
     let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], openingBalance: 0 };
     let html5QrCode = null;
 
-    // JSONP Engine: Solves CORS and Network Error 100%
     function apiCall(params) {
       return new Promise((resolve, reject) => {
         const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
         window[callbackName] = function(data) {
           delete window[callbackName];
-          try { document.body.removeChild(script); } catch(e){}
+          document.body.removeChild(script);
           resolve(data);
         };
 
@@ -275,7 +313,7 @@
         })
         .catch(err => {
           hideLoading();
-          alert('Network Error connecting to sheet. Please ensure the Google Sheet is shared with "Anyone with the link can view".');
+          alert('Network Error connecting to sheet.');
         });
     }
 
@@ -365,10 +403,20 @@
     function renderTransactions() {
       const container = document.getElementById('txContainer');
       container.innerHTML = '';
-      const filtered = currentData.transactions.filter(t => t.type === currentTab);
+      const query = (document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase().trim() : '');
+
+      let filtered = currentData.transactions.filter(t => t.type === currentTab);
+      if (query) {
+        filtered = filtered.filter(t => 
+          (t.head && t.head.toLowerCase().includes(query)) ||
+          (t.narration && t.narration.toLowerCase().includes(query)) ||
+          (t.mode && t.mode.toLowerCase().includes(query)) ||
+          (t.date && t.date.includes(query))
+        );
+      }
 
       if (filtered.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color: var(--subtext); padding: 20px;">No entries recorded.</p>';
+        container.innerHTML = '<p style="text-align:center; color: var(--subtext); padding: 20px;">No entries found.</p>';
         return;
       }
 
@@ -379,6 +427,7 @@
           <div class="tx-left">
             <h4>${t.head}</h4>
             <p>${t.narration || '-'} | ${t.mode} | ${t.date}</p>
+            ${t.billUrl ? `<a href="${t.billUrl}" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:bold;">📎 View Receipt / Bill</a>` : ''}
           </div>
           <div class="tx-right">
             <div class="tx-amount" style="color: ${t.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">₹ ${t.amount}</div>
@@ -404,7 +453,8 @@
       });
       document.getElementById('modalTxNarr').value = '';
       document.getElementById('modalTxAmount').value = '';
-      document.getElementById('modalAddTx').style.display = 'block';
+      document.getElementById('modalTxBill').value = '';
+      document.getElementById('modalAddTx').style.display = 'flex';
     }
 
     function submitNewTransaction() {
@@ -412,6 +462,7 @@
       const narr = document.getElementById('modalTxNarr').value.trim();
       const amt = document.getElementById('modalTxAmount').value.trim();
       const mode = document.getElementById('modalTxMode').value;
+      const bill = document.getElementById('modalTxBill').value.trim();
       const today = new Date().toISOString().split('T')[0];
 
       if (!narr || !amt) return alert('Enter name and amount');
@@ -428,7 +479,8 @@
         amount: amt,
         mode: mode,
         date: today,
-        createdBy: activeUsername
+        createdBy: activeUsername,
+        billUrl: bill
       })
       .then(res => {
         hideLoading();
@@ -466,6 +518,61 @@
       });
     }
 
+    // SHARE & QR LOGIC
+    function getShareableLink() {
+      return `${window.location.origin}${window.location.pathname}?join=${activeSheetId}`;
+    }
+
+    function openShareModal() {
+      const link = getShareableLink();
+      const qrContainer = document.getElementById('qrcodeCanvas');
+      qrContainer.innerHTML = '';
+      new QRCode(qrContainer, {
+        text: link,
+        width: 180,
+        height: 180
+      });
+      document.getElementById('modalShare').style.display = 'flex';
+    }
+
+    function shareViaWhatsApp() {
+      const link = getShareableLink();
+      const text = `*Committee & Event Budget*%0AJoin our event live budget tracker here:%0A${encodeURIComponent(link)}`;
+      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    }
+
+    function copyWebLink() {
+      navigator.clipboard.writeText(getShareableLink()).then(() => {
+        alert('Link copied to clipboard!');
+      });
+    }
+
+    // REPORT LOGIC
+    function openReportModal() {
+      const container = document.getElementById('reportContainer');
+      const headMap = {};
+      currentData.transactions.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if (!headMap[t.head]) headMap[t.head] = { type: t.type, total: 0, count: 0 };
+        headMap[t.head].total += amt;
+        headMap[t.head].count += 1;
+      });
+
+      let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+      Object.keys(headMap).forEach(h => {
+        const item = headMap[h];
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid var(--border);">
+            <div><strong>${h}</strong><br><small style="color:var(--subtext);">${item.count} entries</small></div>
+            <strong style="color:${item.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">₹ ${item.total}</strong>
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html || '<p>No data recorded yet.</p>';
+      document.getElementById('modalReport').style.display = 'flex';
+    }
+
     // QR SCANNER
     function toggleQRScanner() {
       const section = document.getElementById('scannerSection');
@@ -484,9 +591,7 @@
           }
           connectToSheet(cleanSheetId(targetId));
         },
-        (errorMessage) => {
-          // scanning...
-        }
+        () => {}
       ).catch(err => {
         alert("Camera permission denied: " + err);
         section.style.display = 'none';
@@ -497,7 +602,7 @@
       if (html5QrCode) {
         html5QrCode.stop().then(() => {
           document.getElementById('scannerSection').style.display = 'none';
-        }).catch(err => {
+        }).catch(() => {
           document.getElementById('scannerSection').style.display = 'none';
         });
       }

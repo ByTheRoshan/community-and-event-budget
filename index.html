@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mandal Budget & Expense Tracker</title>
+  <style>
+    :root {
+      --primary: #d9663b;
+      --primary-dark: #b54d26;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --subtext: #64748b;
+      --border: #e2e8f0;
+      --income: #16a34a;
+      --expense: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 40px; }
+    .header { background: #1e293b; color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 1.1rem; font-weight: 600; }
+    .badge { font-size: 0.75rem; background: var(--primary); padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+    .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+    .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 16px; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .stat-box { background: #f1f5f9; padding: 12px; border-radius: 8px; }
+    .stat-title { font-size: 0.75rem; color: var(--subtext); text-transform: uppercase; font-weight: 600; }
+    .stat-val { font-size: 1.25rem; font-weight: bold; margin-top: 4px; }
+    .net-balance { grid-column: span 2; background: #fff7ed; border: 1px solid #ffedd5; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: #e2e8f0; color: #1e293b; margin-top: 8px; }
+    .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--subtext); }
+    .form-control { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; }
+    .tx-item { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .tx-left h4 { font-size: 0.95rem; margin-bottom: 4px; }
+    .tx-left p { font-size: 0.8rem; color: var(--subtext); }
+    .tx-right { text-align: right; }
+    .tx-amount { font-weight: bold; font-size: 1.05rem; }
+    .tx-del { background: none; border: none; color: #ef4444; font-size: 0.8rem; cursor: pointer; margin-top: 4px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .tab-btn { background: none; border: none; padding: 8px 16px; font-size: 0.9rem; font-weight: 600; color: var(--subtext); cursor: pointer; border-radius: 6px; }
+    .tab-btn.active { background: #e2e8f0; color: var(--text); }
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="loading" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p style="margin-top: 12px; font-weight: 600;" id="loadingText">Connecting to Budget...</p>
+  </div>
+
+  <div class="header">
+    <h1 id="appTitle">Mandal Budget Tracker</h1>
+    <div id="userBadge" class="badge" style="display: none;">USER</div>
+  </div>
+
+  <div class="container">
+
+    <!-- SCREEN 1: SAVED EVENTS & JOIN -->
+    <div id="screenEvents">
+      <div class="card">
+        <h2 style="font-size: 1.1rem; margin-bottom: 10px;">Connected Budgets</h2>
+        <div id="eventsList"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 1rem; margin-bottom: 12px;">🔗 Join via Sheet ID</h3>
+        <div class="form-group">
+          <input type="text" id="inputJoinSheetId" class="form-control" placeholder="Paste Sheet ID or Google Sheet Link">
+        </div>
+        <button class="btn btn-primary" onclick="joinSheetManual()">Connect Event</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 2: LOGIN MODAL -->
+    <div id="screenLogin" style="display: none;">
+      <div class="card">
+        <h2 id="loginEventName" style="font-size: 1.15rem; color: var(--primary); margin-bottom: 14px; text-align: center;">Event Login</h2>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="loginUser" class="form-control" value="SUPERADMIN">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPass" class="form-control" value="admin123">
+        </div>
+        <button class="btn btn-primary" onclick="submitLogin()">Login</button>
+        <button class="btn btn-secondary" onclick="showEventsScreen()">Back to Events</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: DASHBOARD -->
+    <div id="screenDashboard" style="display: none;">
+      <div class="card net-balance">
+        <span class="stat-title">Closing Balance</span>
+        <div id="valNetBalance" class="stat-val" style="color: var(--primary-dark); font-size: 1.8rem;">₹ 0.00</div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="stat-box">
+          <span class="stat-title">Total Income (Cr.)</span>
+          <div id="valIncome" class="stat-val" style="color: var(--income);">₹ 0</div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-title">Total Expense (Dr.)</span>
+          <div id="valExpense" class="stat-val" style="color: var(--expense);">₹ 0</div>
+        </div>
+      </div>
+
+      <div style="margin: 16px 0; display: flex; gap: 8px;" id="adminActionsBar">
+        <button class="btn btn-primary btn-sm" onclick="showNewTxModal('INCOME')">+ Add Income</button>
+        <button class="btn btn-primary btn-sm" style="background: #dc2626;" onclick="showNewTxModal('EXPENSE')">+ Add Expense</button>
+        <button class="btn btn-secondary btn-sm" onclick="showEventsScreen()">Switch Event</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tabIncBtn" onclick="switchTxTab('INCOME')">Income Entries</button>
+        <button class="tab-btn" id="tabExpBtn" onclick="switchTxTab('EXPENSE')">Expense Entries</button>
+      </div>
+
+      <div id="txContainer"></div>
+    </div>
+
+    <!-- MODAL: ADD TRANSACTION -->
+    <div id="modalAddTx" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); padding: 20px; z-index: 100;">
+      <div class="card" style="margin-top: 40px;">
+        <h3 id="modalTxTitle" style="margin-bottom: 14px;">Add Entry</h3>
+        <div class="form-group">
+          <label>Category / Head</label>
+          <select id="modalTxHead" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label>Narration / Person Name</label>
+          <input type="text" id="modalTxNarr" class="form-control" placeholder="Payer / Purpose name">
+        </div>
+        <div class="form-group">
+          <label>Amount (₹)</label>
+          <input type="number" id="modalTxAmount" class="form-control" placeholder="e.g. 500">
+        </div>
+        <div class="form-group">
+          <label>Payment Mode</label>
+          <select id="modalTxMode" class="form-control">
+            <option>Cash</option>
+            <option>Online / UPI</option>
+            <option>Bank Transfer</option>
+            <option>Cheque</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="submitNewTransaction()">Save Entry</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('modalAddTx').style.display='none'">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7YuWcXpB-JK74CbeZPdMGhcaFplbVXkWRYw3CrILqwIXC4X_omvlaL5_-GK9mzXws/exec";
+    let activeSheetId = "";
+    let activeRole = "USER";
+    let activeUsername = "";
+    let currentTab = "INCOME";
+    let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], openingBalance: 0 };
+
+    window.onload = function() {
+      const params = new URLSearchParams(window.location.search);
+      const joinId = params.get('join');
+      if (joinId) {
+        connectToSheet(cleanSheetId(joinId));
+      } else {
+        renderSavedEvents();
+      }
+    };
+
+    function cleanSheetId(str) {
+      if (str.includes('/d/')) {
+        return str.split('/d/')[1].split('/')[0];
+      }
+      return str.trim();
+    }
+
+    function showLoading(msg) {
+      document.getElementById('loadingText').innerText = msg;
+      document.getElementById('loading').style.display = 'flex';
+    }
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
+    }
+
+    function renderSavedEvents() {
+      document.getElementById('screenEvents').style.display = 'block';
+      document.getElementById('screenLogin').style.display = 'none';
+      document.getElementById('screenDashboard').style.display = 'none';
+      document.getElementById('userBadge').style.display = 'none';
+
+      const events = JSON.parse(localStorage.getItem('MANDAL_SAVED_EVENTS') || '[]');
+      const container = document.getElementById('eventsList');
+      container.innerHTML = '';
+
+      if (events.length === 0) {
+        container.innerHTML = '<p style="color: var(--subtext); font-size: 0.85rem;">No connected events yet. Paste a Sheet ID below or open a shared link.</p>';
+        return;
+      }
+
+      events.forEach(e => {
+        const item = document.createElement('div');
+        item.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer;";
+        item.innerHTML = `<div><strong>📁 ${e.name}</strong><br><small style="color: var(--subtext);">${e.id.substring(0, 10)}...</small></div><button class="btn btn-primary btn-sm">Open</button>`;
+        item.onclick = () => openLoginForEvent(e.id, e.name);
+        container.appendChild(item);
+      });
+    }
+
+    function joinSheetManual() {
+      const raw = document.getElementById('inputJoinSheetId').value;
+      if (!raw) return alert('Please paste Sheet ID');
+      connectToSheet(cleanSheetId(raw));
+    }
+
+    function connectToSheet(sheetId) {
+      showLoading('Verifying Sheet Access...');
+      fetch(`${SCRIPT_URL}?action=getEventInfo&sheetId=${sheetId}`)
+        .then(r => r.json())
+        .then(res => {
+          hideLoading();
+          if (res.success) {
+            saveEventToStorage(sheetId, res.eventName);
+            openLoginForEvent(sheetId, res.eventName);
+          } else {
+            alert('Cannot access sheet: ' + res.message);
+          }
+        })
+        .catch(err => {
+          hideLoading();
+          alert('Network Error connecting to sheet');
+        });
+    }
+
+    function saveEventToStorage(sheetId, name) {
+      let events = JSON.parse(localStorage.getItem('MANDAL_SAVED_EVENTS') || '[]');
+      if (!events.some(e => e.id === sheetId)) {
+        events.push({ id: sheetId, name: name });
+        localStorage.setItem('MANDAL_SAVED_EVENTS', JSON.stringify(events));
+      }
+    }
+
+    function openLoginForEvent(sheetId, name) {
+      activeSheetId = sheetId;
+      document.getElementById('screenEvents').style.display = 'none';
+      document.getElementById('screenLogin').style.display = 'block';
+      document.getElementById('loginEventName').innerText = name;
+    }
+
+    function showEventsScreen() {
+      renderSavedEvents();
+    }
+
+    function submitLogin() {
+      const u = document.getElementById('loginUser').value.trim();
+      const p = document.getElementById('loginPass').value.trim();
+      if (!u || !p) return alert('Enter username & password');
+
+      showLoading('Logging in...');
+      fetch(`${SCRIPT_URL}?action=login&sheetId=${activeSheetId}&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`)
+        .then(r => r.json())
+        .then(res => {
+          hideLoading();
+          if (res.success) {
+            activeRole = res.role;
+            activeUsername = res.username;
+            loadDashboard();
+          } else {
+            alert(res.message);
+          }
+        })
+        .catch(() => {
+          hideLoading();
+          alert('Login failed');
+        });
+    }
+
+    function loadDashboard() {
+      showLoading('Loading transactions...');
+      fetch(`${SCRIPT_URL}?action=getData&sheetId=${activeSheetId}`)
+        .then(r => r.json())
+        .then(res => {
+          hideLoading();
+          if (res.success) {
+            currentData = res;
+            document.getElementById('screenLogin').style.display = 'none';
+            document.getElementById('screenDashboard').style.display = 'block';
+            document.getElementById('userBadge').innerText = activeRole;
+            document.getElementById('userBadge').style.display = 'block';
+            renderSummary();
+            renderTransactions();
+          }
+        })
+        .catch(() => {
+          hideLoading();
+          alert('Error loading dashboard');
+        });
+    }
+
+    function renderSummary() {
+      let inc = 0, exp = 0;
+      currentData.transactions.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if (t.type === 'INCOME') inc += amt;
+        if (t.type === 'EXPENSE') exp += amt;
+      });
+      const net = (currentData.openingBalance || 0) + inc - exp;
+      document.getElementById('valNetBalance').innerText = '₹ ' + net.toFixed(2);
+      document.getElementById('valIncome').innerText = '₹ ' + inc.toFixed(0);
+      document.getElementById('valExpense').innerText = '₹ ' + exp.toFixed(0);
+    }
+
+    function switchTxTab(type) {
+      currentTab = type;
+      document.getElementById('tabIncBtn').className = type === 'INCOME' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tabExpBtn').className = type === 'EXPENSE' ? 'tab-btn active' : 'tab-btn';
+      renderTransactions();
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('txContainer');
+      container.innerHTML = '';
+      const filtered = currentData.transactions.filter(t => t.type === currentTab);
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color: var(--subtext); padding: 20px;">No entries recorded.</p>';
+        return;
+      }
+
+      filtered.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'tx-item';
+        item.innerHTML = `
+          <div class="tx-left">
+            <h4>${t.head}</h4>
+            <p>${t.narration || '-'} | ${t.mode} | ${t.date}</p>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount" style="color: ${t.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">₹ ${t.amount}</div>
+            ${activeRole !== 'USER' ? `<button class="tx-del" onclick="deleteEntry('${t.id}')">Delete</button>` : ''}
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    let pendingType = "INCOME";
+    function showNewTxModal(type) {
+      if (activeRole === 'USER') return alert('Only Admins can add entries');
+      pendingType = type;
+      document.getElementById('modalTxTitle').innerText = type === 'INCOME' ? 'New Income Entry' : 'New Expense Entry';
+      const heads = type === 'INCOME' ? currentData.incomeHeads : currentData.expenseHeads;
+      const select = document.getElementById('modalTxHead');
+      select.innerHTML = '';
+      heads.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h; opt.innerText = h;
+        select.appendChild(opt);
+      });
+      document.getElementById('modalTxNarr').value = '';
+      document.getElementById('modalTxAmount').value = '';
+      document.getElementById('modalAddTx').style.display = 'block';
+    }
+
+    function submitNewTransaction() {
+      const head = document.getElementById('modalTxHead').value;
+      const narr = document.getElementById('modalTxNarr').value.trim();
+      const amt = document.getElementById('modalTxAmount').value.trim();
+      const mode = document.getElementById('modalTxMode').value;
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!narr || !amt) return alert('Enter name and amount');
+
+      showLoading('Saving entry...');
+      document.getElementById('modalAddTx').style.display = 'none';
+
+      const url = `${SCRIPT_URL}?action=addTransaction&sheetId=${activeSheetId}&type=${pendingType}&head=${encodeURIComponent(head)}&narration=${encodeURIComponent(narr)}&amount=${amt}&mode=${encodeURIComponent(mode)}&date=${today}&createdBy=${encodeURIComponent(activeUsername)}`;
+
+      fetch(url)
+        .then(r => r.json())
+        .then(res => {
+          hideLoading();
+          if (res.success) {
+            loadDashboard();
+          } else {
+            alert('Save error: ' + res.message);
+          }
+        })
+        .catch(() => {
+          hideLoading();
+          alert('Network save error');
+        });
+    }
+
+    function deleteEntry(txId) {
+      if (!confirm('Are you sure you want to delete this entry?')) return;
+      showLoading('Removing entry...');
+      fetch(`${SCRIPT_URL}?action=deleteTransaction&sheetId=${activeSheetId}&txId=${txId}`)
+        .then(r => r.json())
+        .then(res => {
+          hideLoading();
+          if (res.success) {
+            loadDashboard();
+          } else {
+            alert('Delete error: ' + res.message);
+          }
+        })
+        .catch(() => {
+          hideLoading();
+          alert('Network delete error');
+        });
+    }
+  </script>
+</body>
+</html>

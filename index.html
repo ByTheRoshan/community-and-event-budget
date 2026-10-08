@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mandal Budget & Expense Tracker</title>
+  <title>Committee & Event Budget Tracker</title>
   <style>
     :root {
       --primary: #d9663b;
@@ -58,7 +58,7 @@
   </div>
 
   <div class="header">
-    <h1 id="appTitle">Mandal Budget Tracker</h1>
+    <h1 id="appTitle">Committee & Event Budget Tracker</h1>
     <div id="userBadge" class="badge" style="display: none;">USER</div>
   </div>
 
@@ -200,7 +200,7 @@
       document.getElementById('screenDashboard').style.display = 'none';
       document.getElementById('userBadge').style.display = 'none';
 
-      const events = JSON.parse(localStorage.getItem('MANDAL_SAVED_EVENTS') || '[]');
+      const events = JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
       const container = document.getElementById('eventsList');
       container.innerHTML = '';
 
@@ -244,10 +244,10 @@
     }
 
     function saveEventToStorage(sheetId, name) {
-      let events = JSON.parse(localStorage.getItem('MANDAL_SAVED_EVENTS') || '[]');
+      let events = JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
       if (!events.some(e => e.id === sheetId)) {
         events.push({ id: sheetId, name: name });
-        localStorage.setItem('MANDAL_SAVED_EVENTS', JSON.stringify(events));
+        localStorage.setItem('COMMITTEE_SAVED_EVENTS', JSON.stringify(events));
       }
     }
 

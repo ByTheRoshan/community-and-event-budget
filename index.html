@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Committee & Event Budget Tracker</title>
+  <!-- QR Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     :root {
       --primary: #d9663b;
@@ -32,6 +34,7 @@
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-dark); }
     .btn-secondary { background: #e2e8f0; color: #1e293b; margin-top: 8px; }
+    .btn-scanner { background: #0f172a; color: white; margin-top: 10px; }
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--subtext); }
@@ -45,9 +48,10 @@
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
     .tab-btn { background: none; border: none; padding: 8px 16px; font-size: 0.9rem; font-weight: 600; color: var(--subtext); cursor: pointer; border-radius: 6px; }
     .tab-btn.active { background: #e2e8f0; color: var(--text); }
-    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
     .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
   </style>
 </head>
 <body>
@@ -72,11 +76,18 @@
       </div>
 
       <div class="card">
-        <h3 style="font-size: 1rem; margin-bottom: 12px;">🔗 Join via Sheet ID</h3>
+        <h3 style="font-size: 1rem; margin-bottom: 12px;">🔗 Join Event</h3>
         <div class="form-group">
           <input type="text" id="inputJoinSheetId" class="form-control" placeholder="Paste Sheet ID or Google Sheet Link">
         </div>
         <button class="btn btn-primary" onclick="joinSheetManual()">Connect Event</button>
+        <button class="btn btn-scanner" onclick="toggleQRScanner()">📷 Scan Event QR Code</button>
+        
+        <!-- QR SCANNER CONTAINER -->
+        <div id="scannerSection" style="display: none; margin-top: 15px;">
+          <div id="reader"></div>
+          <button class="btn btn-secondary btn-sm" onclick="stopQRScanner()">Close Camera</button>
+        </div>
       </div>
     </div>
 
@@ -168,6 +179,32 @@
     let activeUsername = "";
     let currentTab = "INCOME";
     let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], openingBalance: 0 };
+    let html5QrCode = null;
+
+    // JSONP Engine: Solves CORS and Network Error 100%
+    function apiCall(params) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
+        window[callbackName] = function(data) {
+          delete window[callbackName];
+          try { document.body.removeChild(script); } catch(e){}
+          resolve(data);
+        };
+
+        let queryString = Object.keys(params)
+          .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+          .join('&');
+
+        const script = document.createElement('script');
+        script.src = `${SCRIPT_URL}?${queryString}&callback=${callbackName}`;
+        script.onerror = function() {
+          delete window[callbackName];
+          try { document.body.removeChild(script); } catch(e){}
+          reject(new Error("Network Error connecting to Apps Script"));
+        };
+        document.body.appendChild(script);
+      });
+    }
 
     window.onload = function() {
       const params = new URLSearchParams(window.location.search);
@@ -205,7 +242,7 @@
       container.innerHTML = '';
 
       if (events.length === 0) {
-        container.innerHTML = '<p style="color: var(--subtext); font-size: 0.85rem;">No connected events yet. Paste a Sheet ID below or open a shared link.</p>';
+        container.innerHTML = '<p style="color: var(--subtext); font-size: 0.85rem;">No connected events yet. Paste a Sheet ID below or scan QR code.</p>';
         return;
       }
 
@@ -226,8 +263,7 @@
 
     function connectToSheet(sheetId) {
       showLoading('Verifying Sheet Access...');
-      fetch(`${SCRIPT_URL}?action=getEventInfo&sheetId=${sheetId}`)
-        .then(r => r.json())
+      apiCall({ action: 'getEventInfo', sheetId: sheetId })
         .then(res => {
           hideLoading();
           if (res.success) {
@@ -239,7 +275,7 @@
         })
         .catch(err => {
           hideLoading();
-          alert('Network Error connecting to sheet');
+          alert('Network Error connecting to sheet. Please ensure the Google Sheet is shared with "Anyone with the link can view".');
         });
     }
 
@@ -268,8 +304,7 @@
       if (!u || !p) return alert('Enter username & password');
 
       showLoading('Logging in...');
-      fetch(`${SCRIPT_URL}?action=login&sheetId=${activeSheetId}&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`)
-        .then(r => r.json())
+      apiCall({ action: 'login', sheetId: activeSheetId, username: u, password: p })
         .then(res => {
           hideLoading();
           if (res.success) {
@@ -288,8 +323,7 @@
 
     function loadDashboard() {
       showLoading('Loading transactions...');
-      fetch(`${SCRIPT_URL}?action=getData&sheetId=${activeSheetId}`)
-        .then(r => r.json())
+      apiCall({ action: 'getData', sheetId: activeSheetId })
         .then(res => {
           hideLoading();
           if (res.success) {
@@ -385,41 +419,88 @@
       showLoading('Saving entry...');
       document.getElementById('modalAddTx').style.display = 'none';
 
-      const url = `${SCRIPT_URL}?action=addTransaction&sheetId=${activeSheetId}&type=${pendingType}&head=${encodeURIComponent(head)}&narration=${encodeURIComponent(narr)}&amount=${amt}&mode=${encodeURIComponent(mode)}&date=${today}&createdBy=${encodeURIComponent(activeUsername)}`;
-
-      fetch(url)
-        .then(r => r.json())
-        .then(res => {
-          hideLoading();
-          if (res.success) {
-            loadDashboard();
-          } else {
-            alert('Save error: ' + res.message);
-          }
-        })
-        .catch(() => {
-          hideLoading();
-          alert('Network save error');
-        });
+      apiCall({
+        action: 'addTransaction',
+        sheetId: activeSheetId,
+        type: pendingType,
+        head: head,
+        narration: narr,
+        amount: amt,
+        mode: mode,
+        date: today,
+        createdBy: activeUsername
+      })
+      .then(res => {
+        hideLoading();
+        if (res.success) {
+          loadDashboard();
+        } else {
+          alert('Save error: ' + res.message);
+        }
+      })
+      .catch(() => {
+        hideLoading();
+        alert('Network save error');
+      });
     }
 
     function deleteEntry(txId) {
       if (!confirm('Are you sure you want to delete this entry?')) return;
       showLoading('Removing entry...');
-      fetch(`${SCRIPT_URL}?action=deleteTransaction&sheetId=${activeSheetId}&txId=${txId}`)
-        .then(r => r.json())
-        .then(res => {
-          hideLoading();
-          if (res.success) {
-            loadDashboard();
-          } else {
-            alert('Delete error: ' + res.message);
+      apiCall({
+        action: 'deleteTransaction',
+        sheetId: activeSheetId,
+        txId: txId
+      })
+      .then(res => {
+        hideLoading();
+        if (res.success) {
+          loadDashboard();
+        } else {
+          alert('Delete error: ' + res.message);
+        }
+      })
+      .catch(() => {
+        hideLoading();
+        alert('Network delete error');
+      });
+    }
+
+    // QR SCANNER
+    function toggleQRScanner() {
+      const section = document.getElementById('scannerSection');
+      section.style.display = 'block';
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          stopQRScanner();
+          let targetId = decodedText;
+          if (decodedText.includes('join=')) {
+            targetId = decodedText.split('join=')[1].split('&')[0];
           }
-        })
-        .catch(() => {
-          hideLoading();
-          alert('Network delete error');
+          connectToSheet(cleanSheetId(targetId));
+        },
+        (errorMessage) => {
+          // scanning...
+        }
+      ).catch(err => {
+        alert("Camera permission denied: " + err);
+        section.style.display = 'none';
+      });
+    }
+
+    function stopQRScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          document.getElementById('scannerSection').style.display = 'none';
+        }).catch(err => {
+          document.getElementById('scannerSection').style.display = 'none';
         });
+      }
     }
   </script>
 </body>

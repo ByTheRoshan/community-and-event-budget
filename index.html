@@ -4,25 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Committee & Event Budget Tracker</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  
+  <!-- QR Scanner & Chart.js -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     :root {
       --primary-blue: #1d4ed8;
       --primary-gradient: linear-gradient(135deg, #1d4ed8 0%, #059669 100%);
       --dark-navy: #091e42;
-      --bg-page: #f1f5f9;
+      --bg-page: #f0f6fc;
       --card-bg: #ffffff;
       --text-main: #0f172a;
       --text-muted: #64748b;
       --border-color: #e2e8f0;
+      --primary-teal: #00c988;
+      --primary-teal-dark: #00aa72;
       --income: #16a34a;
       --expense: #dc2626;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg-page); color: var(--text-main); min-height: 100vh; }
 
-    /* MODERN SPLIT SCREEN LOGIN / JOIN UI */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-page); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+
+    /* --- PORTAL / LOGIN / JOIN SCREEN --- */
     .portal-wrapper {
       min-height: 100vh;
       display: flex;
@@ -200,28 +212,389 @@
     }
     .saved-budget-chip:hover { border-color: #cbd5e1; background: #ffffff; }
 
-    /* DASHBOARD STYLES */
-    .app-header { background: #0f172a; color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .dash-container { max-width: 650px; margin: 20px auto; padding: 0 16px; }
-    .stat-card-net { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
-    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-    .stat-box-sm { background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; }
-    .action-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-    .btn-chip { padding: 8px 14px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-    .tab-nav { display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
-    .tab-link { background: none; border: none; padding: 8px 16px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
-    .tab-link.active { color: #1d4ed8; border-color: #1d4ed8; }
-    .tx-row-item { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    /* --- MODERN FINTECH DASHBOARD SCREEN --- */
+    .dashboard-app-layout {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+      background: var(--bg-page);
+    }
 
-    /* OVERLAYS */
+    .fintech-sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #053047 0%, #031c2b 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      flex-shrink: 0;
+    }
+
+    .fintech-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      padding-left: 8px;
+    }
+
+    .fintech-brand-icon {
+      width: 44px;
+      height: 44px;
+      background: #0ea5e9;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+    }
+
+    .fintech-brand-title h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .fintech-brand-title p {
+      font-size: 13px;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    .fintech-nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .fintech-nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .fintech-nav-item a:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .fintech-nav-item.active a {
+      background: var(--primary-teal);
+      color: #ffffff;
+      box-shadow: 0 6px 18px rgba(0, 201, 136, 0.35);
+    }
+
+    .fintech-main-panel {
+      flex: 1;
+      padding: 28px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 1400px;
+      overflow-y: auto;
+    }
+
+    .fintech-top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .fintech-welcome-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .welcome-avatar {
+      width: 48px;
+      height: 48px;
+      background: #dcfce7;
+      color: #15803d;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .welcome-text h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .welcome-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .fintech-date-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffffff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    /* 3 BIG HIGHLIGHT CARDS */
+    .fintech-highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .fintech-big-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 24px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.025);
+    }
+
+    .fintech-big-card.card-balance { background: linear-gradient(135deg, #ffffff 60%, #e6faf2 100%); }
+    .fintech-big-card.card-income { background: linear-gradient(135deg, #ffffff 60%, #eff6ff 100%); }
+    .fintech-big-card.card-expense { background: linear-gradient(135deg, #ffffff 60%, #fff1f2 100%); }
+
+    .card-row-top { display: flex; align-items: center; gap: 14px; }
+    .card-bubble {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .card-balance .card-bubble { background: #00c988; color: #fff; }
+    .card-income .card-bubble { background: #3b82f6; color: #fff; }
+    .card-expense .card-bubble { background: #f43f5e; color: #fff; }
+
+    .card-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .card-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .card-trend {
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .trend-green { color: #10b981; }
+    .trend-blue { color: #2563eb; }
+    .trend-red { color: #f43f5e; }
+
+    /* 4 MINI STAT CARDS */
+    .fintech-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .fintech-mini-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .mini-bubble {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .fintech-mini-card:nth-child(1) .mini-bubble { background: #dcfce7; color: #15803d; }
+    .fintech-mini-card:nth-child(2) .mini-bubble { background: #e0f2fe; color: #0369a1; }
+    .fintech-mini-card:nth-child(3) .mini-bubble { background: #ffe4e6; color: #be123c; }
+    .fintech-mini-card:nth-child(4) .mini-bubble { background: #f3e8ff; color: #7e22ce; }
+
+    .mini-content p { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .mini-content h4 { font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 2px; }
+
+    /* CHART CARD */
+    .fintech-chart-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px 28px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .chart-head-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .chart-heading-group { display: flex; align-items: center; gap: 12px; }
+    .chart-icon-cube {
+      width: 38px;
+      height: 38px;
+      background: #e0f2fe;
+      color: #0284c7;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .chart-heading-group h3 { font-size: 16px; font-weight: 700; color: #0f172a; }
+    .chart-heading-group p { font-size: 12px; color: var(--text-muted); }
+
+    .chart-date-filter { display: flex; align-items: center; gap: 10px; }
+    .filter-date-input {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 12px;
+      color: #334155;
+      outline: none;
+    }
+    .btn-apply-filter {
+      background: var(--primary-teal);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .btn-apply-filter:hover { background: var(--primary-teal-dark); }
+
+    .chart-canvas-box { position: relative; height: 260px; width: 100%; }
+
+    /* TRANSACTIONS BOTTOM PANEL */
+    .fintech-tx-section {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px 28px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    }
+
+    .tx-top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .action-chips-group { display: flex; gap: 10px; }
+    .btn-action-chip {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.15s;
+    }
+
+    .btn-chip-income { background: var(--income); color: #fff; }
+    .btn-chip-expense { background: var(--expense); color: #fff; }
+    .btn-chip-share { background: #0f172a; color: #fff; }
+    .btn-chip-switch { background: #e2e8f0; color: #0f172a; }
+
+    .tx-tabs-nav {
+      display: flex;
+      gap: 14px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+
+    .tx-tab-btn {
+      background: none;
+      border: none;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .tx-tab-btn.active {
+      color: #0ea5e9;
+      border-color: #0ea5e9;
+    }
+
+    .tx-item-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* LOADING SPINNER */
     .loading-spin { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-    .spinner-ring { width: 44px; height: 44px; border: 4px solid #f1f5f9; border-top: 4px solid #1d4ed8; border-radius: 50%; animation: spin 1s linear infinite; }
+    .spinner-ring { width: 44px; height: 44px; border: 4px solid #f1f5f9; border-top: 4px solid #00c988; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    @media (max-width: 860px) {
-      .portal-wrapper { flex-direction: column; }
-      .portal-branding { padding: 40px 24px; }
-      .brand-illustration { display: none; }
+    @media (max-width: 1024px) {
+      .fintech-highlight-grid { grid-template-columns: 1fr; }
+      .fintech-mini-grid { grid-template-columns: repeat(2, 1fr); }
+      .dashboard-app-layout { flex-direction: column; }
+      .fintech-sidebar { width: 100%; min-height: auto; }
     }
   </style>
 </head>
@@ -236,7 +609,7 @@
   <!-- PORTAL / LOGIN / JOIN SCREEN -->
   <div id="screenPortal" class="portal-wrapper">
     
-    <!-- LEFT SIDE BRANDING (MATCHING IMAGE 2) -->
+    <!-- LEFT SIDE BRANDING -->
     <div class="portal-branding">
       <div>
         <div class="brand-logo-area">
@@ -294,7 +667,7 @@
           </div>
         </div>
 
-        <!-- STEP B: LOGIN CARD (MATCHING IMAGE 2 EXACTLY) -->
+        <!-- STEP B: LOGIN CARD -->
         <div id="boxLoginEvent" style="display: none;">
           <div class="auth-header">
             <div class="auth-avatar">👤</div>
@@ -331,50 +704,158 @@
 
   </div>
 
-  <!-- MAIN DASHBOARD SCREEN (OPENS AFTER LOGIN) -->
-  <div id="screenDashboard" style="display: none;">
-    <div class="app-header">
-      <h1 id="appTitle" style="font-size: 1.1rem; font-weight: 600;">Committee & Event Budget Tracker</h1>
-      <div id="userBadge" style="background: #16a34a; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 6px;">SUPER_ADMIN</div>
-    </div>
+  <!-- MODERN FINTECH DASHBOARD SCREEN -->
+  <div id="screenDashboard" class="dashboard-app-layout" style="display: none;">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="fintech-sidebar">
+      <div class="fintech-brand">
+        <div class="fintech-brand-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        <div class="fintech-brand-title">
+          <h3>Committee & Event</h3>
+          <p>Budget Tracker</p>
+        </div>
+      </div>
 
-    <div class="dash-container">
+      <ul class="fintech-nav-list">
+        <li class="fintech-nav-item active"><a onclick="showConnectBox()"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+        <li class="fintech-nav-item"><a onclick="switchTxTab('INCOME')"><i class="fa-solid fa-arrow-trend-up"></i> Income</a></li>
+        <li class="fintech-nav-item"><a onclick="switchTxTab('EXPENSE')"><i class="fa-solid fa-arrow-trend-down"></i> Expense</a></li>
+        <li class="fintech-nav-item"><a><i class="fa-solid fa-chart-pie"></i> Status</a></li>
+        <li class="fintech-nav-item"><a><i class="fa-solid fa-cloud-arrow-up"></i> Export / Backup</a></li>
+        <li class="fintech-nav-item"><a><i class="fa-solid fa-gear"></i> Settings</a></li>
+        <li class="fintech-nav-item"><a onclick="showConnectBox()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
+      </ul>
+
+      <div style="margin-top: auto; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; text-align: center; font-size: 11px; color: #64748b;">
+        Mandal Tracker © 2026
+      </div>
+    </aside>
+
+    <!-- MAIN PANEL -->
+    <main class="fintech-main-panel">
       
-      <!-- CLOSING BALANCE CARD -->
-      <div class="stat-card-net">
-        <span style="font-size: 0.75rem; font-weight: 700; color: #9a3412; text-transform: uppercase;">Closing Balance</span>
-        <div id="valNetBalance" style="font-size: 2rem; font-weight: 800; color: #c2410c; margin-top: 4px;">₹ 0.00</div>
-      </div>
-
-      <!-- INCOME / EXPENSE CARDS -->
-      <div class="stat-grid">
-        <div class="stat-box-sm">
-          <span style="font-size: 0.75rem; font-weight: 700; color: #64748b;">TOTAL INCOME</span>
-          <div id="valIncome" style="font-size: 1.3rem; font-weight: 700; color: var(--income); margin-top: 4px;">₹ 0</div>
+      <!-- Top Bar -->
+      <div class="fintech-top-header">
+        <div class="fintech-welcome-box">
+          <div class="welcome-avatar"><i class="fa-solid fa-users"></i></div>
+          <div class="welcome-text">
+            <h1 id="appTitle">Welcome Back!</h1>
+            <p>Here's your committee budget overview</p>
+          </div>
         </div>
-        <div class="stat-box-sm">
-          <span style="font-size: 0.75rem; font-weight: 700; color: #64748b;">TOTAL EXPENSE</span>
-          <div id="valExpense" style="font-size: 1.3rem; font-weight: 700; color: var(--expense); margin-top: 4px;">₹ 0</div>
+
+        <div class="fintech-date-badge">
+          <i class="fa-regular fa-calendar"></i>
+          <span id="liveDashboardDate">06 Oct 2026</span>
         </div>
       </div>
 
-      <!-- ACTION BUTTONS -->
-      <div class="action-row">
-        <button class="btn-chip" style="background: var(--income); color: white;" onclick="showNewTxModal('INCOME')">+ Income</button>
-        <button class="btn-chip" style="background: var(--expense); color: white;" onclick="showNewTxModal('EXPENSE')">+ Expense</button>
-        <button class="btn-chip" style="background: #0f172a; color: white;" onclick="openShareModal()">🔗 Share / QR</button>
-        <button class="btn-chip" style="background: #e2e8f0; color: #0f172a;" onclick="showConnectBox()">Switch Event</button>
+      <!-- 3 Highlight Cards -->
+      <div class="fintech-highlight-grid">
+        <div class="fintech-big-card card-balance">
+          <div class="card-row-top">
+            <div class="card-bubble"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            <span class="card-lbl">Current Balance</span>
+          </div>
+          <div class="card-val" id="valNetBalance">₹ 0.00</div>
+          <div class="card-trend trend-green"><i class="fa-solid fa-arrow-trend-up"></i> +12% from last month</div>
+        </div>
+
+        <div class="fintech-big-card card-income">
+          <div class="card-row-top">
+            <div class="card-bubble"><i class="fa-solid fa-wallet"></i></div>
+            <span class="card-lbl">Total Income</span>
+          </div>
+          <div class="card-val" id="valIncome">₹ 0</div>
+          <div class="card-trend trend-blue"><i class="fa-solid fa-arrow-trend-up"></i> +8% from last month</div>
+        </div>
+
+        <div class="fintech-big-card card-expense">
+          <div class="card-row-top">
+            <div class="card-bubble"><i class="fa-solid fa-receipt"></i></div>
+            <span class="card-lbl">Total Expense</span>
+          </div>
+          <div class="card-val" id="valExpense">₹ 0</div>
+          <div class="card-trend trend-red"><i class="fa-solid fa-arrow-trend-up"></i> +3% from last month</div>
+        </div>
       </div>
 
-      <!-- TABS -->
-      <div class="tab-nav">
-        <button class="tab-link active" id="tabIncBtn" onclick="switchTxTab('INCOME')">Income Entries</button>
-        <button class="tab-link" id="tabExpBtn" onclick="switchTxTab('EXPENSE')">Expense Entries</button>
+      <!-- 4 Mini Cards -->
+      <div class="fintech-mini-grid">
+        <div class="fintech-mini-card">
+          <div class="mini-bubble"><i class="fa-solid fa-vault"></i></div>
+          <div class="mini-content">
+            <p>Opening Balance</p>
+            <h4 id="valOpeningBal">₹ 0</h4>
+          </div>
+        </div>
+        <div class="fintech-mini-card">
+          <div class="mini-bubble"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+          <div class="mini-content">
+            <p>Today's Income</p>
+            <h4 id="valTodayIncome">₹ 0</h4>
+          </div>
+        </div>
+        <div class="fintech-mini-card">
+          <div class="mini-bubble"><i class="fa-solid fa-money-bill-transfer"></i></div>
+          <div class="mini-content">
+            <p>Today's Expense</p>
+            <h4 id="valTodayExpense">₹ 0</h4>
+          </div>
+        </div>
+        <div class="fintech-mini-card">
+          <div class="mini-bubble"><i class="fa-solid fa-list-check"></i></div>
+          <div class="mini-content">
+            <p>Total Transactions</p>
+            <h4 id="valTotalTxns">0</h4>
+          </div>
+        </div>
       </div>
 
-      <!-- LIST -->
-      <div id="txContainer"></div>
-    </div>
+      <!-- Balance Trend Chart Card -->
+      <div class="fintech-chart-card">
+        <div class="chart-head-wrap">
+          <div class="chart-heading-group">
+            <div class="chart-icon-cube"><i class="fa-solid fa-chart-line"></i></div>
+            <div>
+              <h3>Balance Trend</h3>
+              <p>Track your balance over time</p>
+            </div>
+          </div>
+
+          <div class="chart-date-filter">
+            <input type="date" class="filter-date-input" id="chartDateFrom">
+            <span style="font-size: 12px; color: #64748b;">to</span>
+            <input type="date" class="filter-date-input" id="chartDateTo">
+            <button class="btn-apply-filter" onclick="applyChartFilter()">Apply</button>
+          </div>
+        </div>
+
+        <div class="chart-canvas-box">
+          <canvas id="balanceTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bottom Transactions Card -->
+      <div class="fintech-tx-section">
+        <div class="tx-top-actions">
+          <div class="tx-tabs-nav">
+            <button class="tx-tab-btn active" id="tabIncBtn" onclick="switchTxTab('INCOME')">Income Entries</button>
+            <button class="tx-tab-btn" id="tabExpBtn" onclick="switchTxTab('EXPENSE')">Expense Entries</button>
+          </div>
+
+          <div class="action-chips-group">
+            <button class="btn-action-chip btn-chip-share" onclick="openShareModal()">🔗 Share / QR</button>
+            <button class="btn-action-chip btn-chip-switch" onclick="showConnectBox()">Switch Event</button>
+          </div>
+        </div>
+
+        <div id="txContainer"></div>
+      </div>
+
+    </main>
+
   </div>
 
   <script>
@@ -385,6 +866,7 @@
     let currentTab = "INCOME";
     let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], openingBalance: 0 };
     let html5QrCode = null;
+    let trendChartInstance = null;
 
     function cleanSheetId(str) {
       if (!str) return "";
@@ -421,6 +903,10 @@
     }
 
     window.onload = function() {
+      // Live Date
+      const dateOpts = { day: '2-digit', month: 'short', year: 'numeric' };
+      document.getElementById('liveDashboardDate').innerText = new Date().toLocaleDateString('en-GB', dateOpts);
+
       const params = new URLSearchParams(window.location.search);
       const joinId = params.get('join');
       if (joinId) {
@@ -449,7 +935,7 @@
         events.forEach(e => {
           const item = document.createElement('div');
           item.className = 'saved-budget-chip';
-          item.innerHTML = `<div><strong>📁 ${e.name}</strong><br><small style="color:#64748b;">${e.id.substring(0, 10)}...</small></div><button class="btn-chip" style="background:#1d4ed8; color:white;">Open</button>`;
+          item.innerHTML = `<div><strong>📁 ${e.name}</strong><br><small style="color:#64748b;">${e.id.substring(0, 10)}...</small></div><button class="btn-outline-action" style="width:auto; padding:6px 14px; margin:0;">Open</button>`;
           item.onclick = () => openLoginForEvent(e.id, e.name);
           container.appendChild(item);
         });
@@ -536,10 +1022,10 @@
           if (res.success) {
             currentData = res;
             document.getElementById('screenPortal').style.display = 'none';
-            document.getElementById('screenDashboard').style.display = 'block';
-            document.getElementById('userBadge').innerText = activeRole;
+            document.getElementById('screenDashboard').style.display = 'flex';
             renderSummary();
             renderTransactions();
+            renderTrendChart();
           }
         })
         .catch(() => {
@@ -549,22 +1035,115 @@
     }
 
     function renderSummary() {
-      let inc = 0, exp = 0;
+      let inc = 0, exp = 0, todayInc = 0, todayExp = 0;
+      const todayStr = new Date().toISOString().slice(0, 10);
+
       currentData.transactions.forEach(t => {
         const amt = parseFloat(t.amount) || 0;
-        if (t.type === 'INCOME') inc += amt;
-        if (t.type === 'EXPENSE') exp += amt;
+        if (t.type === 'INCOME') {
+          inc += amt;
+          if (t.date && t.date.includes(todayStr)) todayInc += amt;
+        }
+        if (t.type === 'EXPENSE') {
+          exp += amt;
+          if (t.date && t.date.includes(todayStr)) todayExp += amt;
+        }
       });
-      const net = (currentData.openingBalance || 0) + inc - exp;
-      document.getElementById('valNetBalance').innerText = '₹ ' + net.toFixed(2);
-      document.getElementById('valIncome').innerText = '₹ ' + inc.toFixed(0);
-      document.getElementById('valExpense').innerText = '₹ ' + exp.toFixed(0);
+
+      const openBal = parseFloat(currentData.openingBalance) || 0;
+      const net = openBal + inc - exp;
+
+      document.getElementById('valNetBalance').innerText = '₹ ' + net.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+      document.getElementById('valIncome').innerText = '₹ ' + inc.toLocaleString('en-IN');
+      document.getElementById('valExpense').innerText = '₹ ' + exp.toLocaleString('en-IN');
+      document.getElementById('valOpeningBal').innerText = '₹ ' + openBal.toLocaleString('en-IN');
+      document.getElementById('valTodayIncome').innerText = '₹ ' + todayInc.toLocaleString('en-IN');
+      document.getElementById('valTodayExpense').innerText = '₹ ' + todayExp.toLocaleString('en-IN');
+      document.getElementById('valTotalTxns').innerText = currentData.transactions.length;
+    }
+
+    function renderTrendChart() {
+      const dateMap = {};
+      const sorted = [...currentData.transactions].sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+
+      let runningBal = parseFloat(currentData.openingBalance) || 0;
+      sorted.forEach(t => {
+        const d = (t.date || '').slice(5); // MM-DD
+        const amt = parseFloat(t.amount) || 0;
+        if (t.type === 'INCOME') runningBal += amt;
+        if (t.type === 'EXPENSE') runningBal -= amt;
+        dateMap[d] = runningBal;
+      });
+
+      let labels = Object.keys(dateMap);
+      let dataPoints = Object.values(dateMap);
+
+      if (labels.length === 0) {
+        labels = ['Day 1', 'Day 2'];
+        dataPoints = [0, runningBal];
+      }
+
+      const ctx = document.getElementById('balanceTrendChart').getContext('2d');
+      if (trendChartInstance) {
+        trendChartInstance.destroy();
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+      gradient.addColorStop(0, 'rgba(0, 201, 136, 0.28)');
+      gradient.addColorStop(1, 'rgba(0, 201, 136, 0.0)');
+
+      trendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Balance',
+            data: dataPoints,
+            borderColor: '#00c988',
+            borderWidth: 3,
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#00c988',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) { return ' ₹ ' + ctx.parsed.y.toLocaleString('en-IN'); }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+            y: {
+              grid: { color: '#f1f5f9', borderDash: [5, 5] },
+              ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => '₹' + v }
+            }
+          }
+        }
+      });
+    }
+
+    function applyChartFilter() {
+      const from = document.getElementById('chartDateFrom').value;
+      const to = document.getElementById('chartDateTo').value;
+      if (!from || !to) return alert("Please select both dates");
+      alert(`Filtering balance trend from ${from} to ${to}`);
     }
 
     function switchTxTab(type) {
       currentTab = type;
-      document.getElementById('tabIncBtn').className = type === 'INCOME' ? 'tab-link active' : 'tab-link';
-      document.getElementById('tabExpBtn').className = type === 'EXPENSE' ? 'tab-link active' : 'tab-link';
+      document.getElementById('tabIncBtn').className = type === 'INCOME' ? 'tx-tab-btn active' : 'tx-tab-btn';
+      document.getElementById('tabExpBtn').className = type === 'EXPENSE' ? 'tx-tab-btn active' : 'tx-tab-btn';
       renderTransactions();
     }
 
@@ -580,18 +1159,27 @@
 
       filtered.forEach(t => {
         const item = document.createElement('div');
-        item.className = 'tx-row-item';
+        item.className = 'tx-item-card';
         item.innerHTML = `
           <div>
-            <h4 style="font-size:0.95rem;">${t.head}</h4>
-            <p style="font-size:0.8rem; color:#64748b;">${t.narration || '-'} | ${t.mode} | ${t.date}</p>
+            <h4 style="font-size:0.95rem; font-weight:700;">${t.head}</h4>
+            <p style="font-size:0.8rem; color:#64748b; margin-top:2px;">${t.narration || '-'} | ${t.mode} | ${t.date}</p>
           </div>
-          <div style="font-weight:700; color: ${t.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">
+          <div style="font-weight:800; font-size:1.05rem; color: ${t.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">
             ₹ ${t.amount}
           </div>
         `;
         container.appendChild(item);
       });
+    }
+
+    function openShareModal() {
+      const url = window.location.origin + window.location.pathname + '?join=' + activeSheetId;
+      if (navigator.share) {
+        navigator.share({ title: 'Event Budget Tracker', url: url });
+      } else {
+        prompt("Copy Live Event Link:", url);
+      }
     }
 
     function toggleQRScanner() {

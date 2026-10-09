@@ -153,69 +153,58 @@
     .btn-action-del { background: #fee2e2; color: #dc2626; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
 
     /* STATUS & REPORTS STYLING */
-    .status-summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-    .status-card-box {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 16px 20px;
-      border: 1px solid var(--border-color);
-    }
+    .status-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .status-card-box { background: #ffffff; border-radius: 16px; padding: 16px 20px; border: 1px solid var(--border-color); }
     .status-card-box span { font-size: 11px; font-weight: 700; color: #64748b; text-transform: capitalize; }
     .status-card-box h3 { font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 4px; }
 
-    .status-two-col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    .report-block-card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 22px 24px;
-      border: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .report-block-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: #14532d;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .report-row-item {
-      background: #fffcf8;
-      border: 1px solid #f1f5f9;
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .status-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .report-block-card { background: #ffffff; border-radius: 20px; padding: 22px 24px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 14px; }
+    .report-block-title { font-size: 14px; font-weight: 800; color: #14532d; display: flex; align-items: center; gap: 8px; }
+    .report-row-item { background: #fffcf8; border: 1px solid #f1f5f9; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
     .report-row-left strong { font-size: 13px; color: #1e293b; display: block; }
     .report-row-left small { font-size: 11px; color: #94a3b8; }
     .report-row-right { display: flex; align-items: center; gap: 10px; }
     .report-row-right span { font-size: 14px; font-weight: 800; color: #1e293b; }
-    .btn-pdf-chip {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 10px;
-      font-weight: 700;
-      color: #475569;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .btn-pdf-chip { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 10px; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
     .btn-pdf-chip:hover { background: #e2e8f0; }
+
+    /* EXPORT & BACKUP STYLING */
+    .export-action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .export-action-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .export-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .export-action-card h3 { font-size: 16px; font-weight: 800; color: #0f172a; }
+    .export-action-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; }
+    .btn-export-trigger {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.2s;
+    }
 
     /* MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; }
@@ -232,6 +221,7 @@
       .fintech-mini-grid { grid-template-columns: repeat(2, 1fr); }
       .status-summary-grid { grid-template-columns: repeat(2, 1fr); }
       .status-two-col { grid-template-columns: 1fr; }
+      .export-action-grid { grid-template-columns: 1fr; }
       .dashboard-app-layout { flex-direction: column; }
       .fintech-sidebar { width: 100%; }
     }
@@ -333,8 +323,8 @@
         <li class="fintech-nav-item" id="navIncome"><a onclick="navigateTo('INCOME')"><i class="fa-solid fa-arrow-trend-up"></i> Income</a></li>
         <li class="fintech-nav-item" id="navExpense"><a onclick="navigateTo('EXPENSE')"><i class="fa-solid fa-arrow-trend-down"></i> Expense</a></li>
         <li class="fintech-nav-item" id="navStatus"><a onclick="navigateTo('STATUS')"><i class="fa-solid fa-chart-pie"></i> Status</a></li>
-        <li class="fintech-nav-item"><a><i class="fa-solid fa-cloud-arrow-up"></i> Export / Backup</a></li>
-        <li class="fintech-nav-item"><a><i class="fa-solid fa-gear"></i> Settings</a></li>
+        <li class="fintech-nav-item" id="navExport"><a onclick="navigateTo('EXPORT')"><i class="fa-solid fa-cloud-arrow-up"></i> Export / Backup</a></li>
+        <li class="fintech-nav-item" id="navSettings"><a onclick="navigateTo('SETTINGS')"><i class="fa-solid fa-gear"></i> Settings</a></li>
         <li class="fintech-nav-item"><a onclick="showConnectBox()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
       </ul>
 
@@ -597,6 +587,59 @@
             <div id="reportExpModesList" style="display: flex; flex-direction: column; gap: 10px;"></div>
           </div>
         </div>
+      </div>
+
+      <!-- VIEW 5: EXPORT & BACKUP VIEW (NEWLY UNLOCKED) -->
+      <div id="viewExportSection" style="display: none; flex-direction: column; gap: 24px;">
+        
+        <div class="export-action-grid">
+          <!-- Card 1: CSV Export -->
+          <div class="export-action-card">
+            <div class="export-icon-box" style="background: #e0f2fe; color: #0284c7;">
+              <i class="fa-solid fa-file-csv"></i>
+            </div>
+            <h3>Export to CSV / Excel</h3>
+            <p>Download all income and expense transactions in a structured CSV file for bookkeeping and Excel analysis.</p>
+            <button class="btn-export-trigger" style="background: #0284c7; color: #fff;" onclick="exportTransactionsCSV()">
+              <i class="fa-solid fa-download"></i> Download CSV
+            </button>
+          </div>
+
+          <!-- Card 2: Comprehensive Audit Summary PDF -->
+          <div class="export-action-card">
+            <div class="export-icon-box" style="background: #fef3c7; color: #d97706;">
+              <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <h3>Audit Summary PDF</h3>
+            <p>Generate a complete financial audit sheet with opening, income, expense, and category totals for official records.</p>
+            <button class="btn-export-trigger" style="background: #d97706; color: #fff;" onclick="generateAuditSummaryPDF()">
+              <i class="fa-solid fa-file-pdf"></i> Download Audit PDF
+            </button>
+          </div>
+
+          <!-- Card 3: Cloud & JSON Backup -->
+          <div class="export-action-card">
+            <div class="export-icon-box" style="background: #dcfce7; color: #15803d;">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h3>Create JSON Backup</h3>
+            <p>Export a full JSON snapshot of your current budget data to safeguard your records locally.</p>
+            <button class="btn-export-trigger" style="background: #15803d; color: #fff;" onclick="createLocalBackupJSON()">
+              <i class="fa-solid fa-hard-drive"></i> Backup Now (JSON)
+            </button>
+          </div>
+        </div>
+
+        <!-- Backup Status & Info Card -->
+        <div class="report-block-card" style="gap: 16px;">
+          <div class="report-block-title">
+            <i class="fa-solid fa-shield-halved"></i> Data Security & Auto Backups
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+            Your financial data is continuously synchronized with your connected Google Spreadsheet. You can save independent backups anytime above. Always keep your exported CSV files safe for auditing purposes.
+          </p>
+        </div>
+
       </div>
 
     </main>
@@ -863,11 +906,13 @@
       document.getElementById('navIncome').className = viewName === 'INCOME' ? 'fintech-nav-item active' : 'fintech-nav-item';
       document.getElementById('navExpense').className = viewName === 'EXPENSE' ? 'fintech-nav-item active' : 'fintech-nav-item';
       document.getElementById('navStatus').className = viewName === 'STATUS' ? 'fintech-nav-item active' : 'fintech-nav-item';
+      document.getElementById('navExport').className = viewName === 'EXPORT' ? 'fintech-nav-item active' : 'fintech-nav-item';
 
       document.getElementById('viewDashboardSection').style.display = 'none';
       document.getElementById('viewIncomeSection').style.display = 'none';
       document.getElementById('viewExpenseSection').style.display = 'none';
       document.getElementById('viewStatusSection').style.display = 'none';
+      document.getElementById('viewExportSection').style.display = 'none';
 
       if (viewName === 'INCOME') {
         document.getElementById('viewIncomeSection').style.display = 'flex';
@@ -893,6 +938,17 @@
           </div>
         `;
         renderStatusReports();
+      } else if (viewName === 'EXPORT') {
+        document.getElementById('viewExportSection').style.display = 'flex';
+        document.getElementById('pageTitleHeading').innerText = "Export & Backup";
+        document.getElementById('pageSubHeading').innerText = "Download offline audit copies and data backups";
+        document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>`;
+        document.getElementById('topActionArea').innerHTML = `
+          <div class="fintech-date-badge">
+            <i class="fa-regular fa-calendar"></i>
+            <span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+          </div>
+        `;
       } else {
         document.getElementById('viewDashboardSection').style.display = 'block';
         document.getElementById('pageTitleHeading').innerText = "Welcome Back!";
@@ -1402,6 +1458,123 @@
       doc.text("President / Secretary", 440, signY + 20, { align: "center" });
 
       doc.save("Statement_" + headName.replace(/\s+/g, '_') + ".pdf");
+    }
+
+    /* --- REAL EXPORT & BACKUP ACTIONS --- */
+    function exportTransactionsCSV() {
+      if (!currentData.transactions || currentData.transactions.length === 0) {
+        return alert("No transactions available to export!");
+      }
+
+      let csv = "Transaction ID,Date,Type,Ledger Head,Narration,Amount,Payment Mode,Created By\n";
+      currentData.transactions.forEach(t => {
+        const clean = str => `"${(str || '').toString().replace(/"/g, '""')}"`;
+        csv += `${clean(t.id)},${clean(t.date)},${clean(t.type)},${clean(t.head)},${clean(t.narration)},${t.amount || 0},${clean(t.mode)},${clean(t.createdBy)}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Transactions_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function generateAuditSummaryPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [842, 595] });
+
+      const orgTitle = (document.getElementById('activeEventBadgeTag') ? document.getElementById('activeEventBadgeTag').innerText.replace('Event: ', '') : 'COMMUNITY BUDGET').toUpperCase();
+
+      let totalInc = 0, totalExp = 0;
+      currentData.transactions.forEach(t => {
+        const a = parseFloat(t.amount) || 0;
+        if (t.type === 'INCOME') totalInc += a;
+        if (t.type === 'EXPENSE') totalExp += a;
+      });
+      const openBal = parseFloat(currentData.openingBalance) || 0;
+      const closeBal = openBal + totalInc - totalExp;
+
+      // Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(27, 94, 32);
+      doc.text(orgTitle, 421, 50, { align: "center" });
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Official Financial Audit Summary | Date: ${new Date().toLocaleString('en-GB')}`, 421, 72, { align: "center" });
+
+      // Orange line
+      doc.setDrawColor(217, 102, 59);
+      doc.setLineWidth(2);
+      doc.line(50, 88, 792, 88);
+
+      // Top 4 Stat Boxes
+      const boxW = 180;
+      const boxH = 50;
+      const topY = 105;
+
+      const stats = [
+        { label: "OPENING BALANCE", val: "Rs. " + openBal.toLocaleString('en-IN'), col: [15, 23, 42] },
+        { label: "TOTAL INCOME", val: "Rs. " + totalInc.toLocaleString('en-IN'), col: [22, 163, 74] },
+        { label: "TOTAL EXPENSE", val: "Rs. " + totalExp.toLocaleString('en-IN'), col: [220, 38, 38] },
+        { label: "CLOSING BALANCE", val: "Rs. " + closeBal.toLocaleString('en-IN'), col: [217, 102, 59] }
+      ];
+
+      stats.forEach((st, idx) => {
+        const x = 50 + (idx * 187);
+        doc.setDrawColor(226, 232, 240);
+        doc.setFillColor(248, 250, 252);
+        doc.rect(x, topY, boxW, boxH, 'FD');
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text(st.label, x + (boxW/2), topY + 18, { align: "center" });
+
+        doc.setFontSize(14);
+        doc.setTextColor(st.col[0], st.col[1], st.col[2]);
+        doc.text(st.val, x + (boxW/2), topY + 38, { align: "center" });
+      });
+
+      // Signatures
+      doc.setDrawColor(15, 23, 42);
+      doc.setLineWidth(1.2);
+      doc.line(140, 520, 320, 520);
+      doc.line(520, 520, 700, 520);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Treasurer", 230, 540, { align: "center" });
+      doc.text("President / Secretary", 610, 540, { align: "center" });
+
+      doc.save("Audit_Summary_Report.pdf");
+    }
+
+    function createLocalBackupJSON() {
+      const backupData = {
+        timestamp: new Date().toISOString(),
+        sheetId: activeSheetId,
+        openingBalance: currentData.openingBalance,
+        transactions: currentData.transactions,
+        incomeHeads: currentData.incomeHeads,
+        expenseHeads: currentData.expenseHeads
+      };
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      alert("Local JSON backup downloaded successfully!");
     }
 
     function renderTrendChart() {

@@ -10,10 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   
-  <!-- QR Scanner & Chart.js -->
+  <!-- QR Scanner, Chart.js & jsPDF -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     :root {
@@ -147,9 +148,74 @@
     .amt-income-badge { font-weight: 800; color: #00c988; font-size: 14px; }
     .amt-expense-badge { font-weight: 800; color: #dc2626; font-size: 14px; }
     .mode-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #0284c7; }
-    .btn-voucher-view { background: #f43f5e; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-voucher-view { background: #f43f5e; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
     .btn-action-edit { background: #e0f2fe; color: #0369a1; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
     .btn-action-del { background: #fee2e2; color: #dc2626; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+
+    /* STATUS & REPORTS STYLING */
+    .status-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .status-card-box {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      border: 1px solid var(--border-color);
+    }
+    .status-card-box span { font-size: 11px; font-weight: 700; color: #64748b; text-transform: capitalize; }
+    .status-card-box h3 { font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 4px; }
+
+    .status-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .report-block-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 22px 24px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .report-block-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #14532d;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .report-row-item {
+      background: #fffcf8;
+      border: 1px solid #f1f5f9;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .report-row-left strong { font-size: 13px; color: #1e293b; display: block; }
+    .report-row-left small { font-size: 11px; color: #94a3b8; }
+    .report-row-right { display: flex; align-items: center; gap: 10px; }
+    .report-row-right span { font-size: 14px; font-weight: 800; color: #1e293b; }
+    .btn-pdf-chip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-pdf-chip:hover { background: #e2e8f0; }
 
     /* MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; }
@@ -164,6 +230,8 @@
     @media (max-width: 1024px) {
       .fintech-highlight-grid { grid-template-columns: 1fr; }
       .fintech-mini-grid { grid-template-columns: repeat(2, 1fr); }
+      .status-summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .status-two-col { grid-template-columns: 1fr; }
       .dashboard-app-layout { flex-direction: column; }
       .fintech-sidebar { width: 100%; }
     }
@@ -191,7 +259,7 @@
         <p class="brand-tagline">Plan • Track • Manage • Together</p>
         <p class="brand-desc">Efficiently manage committee budgets and events with live Google Sheets synchronization.</p>
       </div>
-      <div style="font-size: 0.85rem; color: #cbd5e1;">ByTheRoshan Tracker © 2026</div>
+      <div style="font-size: 0.85rem; color: #cbd5e1;">Mandal Tracker © 2026</div>
     </div>
 
     <div class="portal-form-side">
@@ -229,7 +297,7 @@
           <div class="auth-header">
             <div class="auth-avatar">👤</div>
             <h3>Welcome Back!</h3>
-            <p id="activeEventBadgeTag">Event: ByTheRoshan</p>
+            <p id="activeEventBadgeTag">Event: Mandal</p>
           </div>
           <div class="input-box">
             <span>👤</span>
@@ -264,14 +332,14 @@
         <li class="fintech-nav-item active" id="navDashboard"><a onclick="navigateTo('DASHBOARD')"><i class="fa-solid fa-house"></i> Dashboard</a></li>
         <li class="fintech-nav-item" id="navIncome"><a onclick="navigateTo('INCOME')"><i class="fa-solid fa-arrow-trend-up"></i> Income</a></li>
         <li class="fintech-nav-item" id="navExpense"><a onclick="navigateTo('EXPENSE')"><i class="fa-solid fa-arrow-trend-down"></i> Expense</a></li>
-        <li class="fintech-nav-item"><a><i class="fa-solid fa-chart-pie"></i> Status</a></li>
+        <li class="fintech-nav-item" id="navStatus"><a onclick="navigateTo('STATUS')"><i class="fa-solid fa-chart-pie"></i> Status</a></li>
         <li class="fintech-nav-item"><a><i class="fa-solid fa-cloud-arrow-up"></i> Export / Backup</a></li>
         <li class="fintech-nav-item"><a><i class="fa-solid fa-gear"></i> Settings</a></li>
         <li class="fintech-nav-item"><a onclick="showConnectBox()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
       </ul>
 
       <div style="margin-top: auto; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; text-align: center; font-size: 11px; color: #64748b;">
-        ByTheRoshan Tracker © 2026
+        Mandal Tracker © 2026
       </div>
     </aside>
 
@@ -465,6 +533,73 @@
             <tbody id="expenseTableBody"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- VIEW 4: STATUS & REPORTS VIEW -->
+      <div id="viewStatusSection" style="display: none; flex-direction: column; gap: 20px;">
+        
+        <!-- 6 Summary Stat Blocks -->
+        <div class="status-summary-grid">
+          <div class="status-card-box">
+            <span>Current Balance</span>
+            <h3 id="statCurBal">₹ 0</h3>
+          </div>
+          <div class="status-card-box">
+            <span>Total Income</span>
+            <h3 id="statTotalInc" style="color: var(--income);">₹ 0</h3>
+          </div>
+          <div class="status-card-box">
+            <span>Total Expense</span>
+            <h3 id="statTotalExp" style="color: var(--expense);">₹ 0</h3>
+          </div>
+          <div class="status-card-box">
+            <span>Opening Balance</span>
+            <h3 id="statOpenBal">₹ 0</h3>
+          </div>
+          <div class="status-card-box">
+            <span>Income Entries</span>
+            <h3 id="statIncCount">0</h3>
+          </div>
+          <div class="status-card-box">
+            <span>Expense Entries</span>
+            <h3 id="statExpCount">0</h3>
+          </div>
+        </div>
+
+        <!-- Two Columns: Income & Expense By Ledger Head -->
+        <div class="status-two-col">
+          <div class="report-block-card">
+            <div class="report-block-title">
+              <i class="fa-solid fa-folder-tree"></i> Income by Ledger Head
+            </div>
+            <div id="reportIncHeadsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+
+          <div class="report-block-card">
+            <div class="report-block-title">
+              <i class="fa-solid fa-folder-tree"></i> Expense by Ledger Head
+            </div>
+            <div id="reportExpHeadsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+        </div>
+
+        <!-- Two Columns: Payment Modes -->
+        <div class="status-two-col">
+          <div class="report-block-card">
+            <div class="report-block-title">
+              <i class="fa-solid fa-money-bill-transfer"></i> Payment Mode — Income
+            </div>
+            <div id="reportIncModesList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+
+          <div class="report-block-card">
+            <div class="report-block-title">
+              <i class="fa-solid fa-money-bill-transfer"></i> Payment Mode — Expense
+            </div>
+            <div id="reportExpModesList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          </div>
+        </div>
+
       </div>
 
     </main>
@@ -691,6 +826,7 @@
             renderTrendChart();
             renderTableData('INCOME', currentData.transactions.filter(t => t.type === 'INCOME'));
             renderTableData('EXPENSE', currentData.transactions.filter(t => t.type === 'EXPENSE'));
+            renderStatusReports();
           }
         })
         .catch(() => { hideLoading(); alert('Error loading dashboard'); });
@@ -729,10 +865,12 @@
       document.getElementById('navDashboard').className = viewName === 'DASHBOARD' ? 'fintech-nav-item active' : 'fintech-nav-item';
       document.getElementById('navIncome').className = viewName === 'INCOME' ? 'fintech-nav-item active' : 'fintech-nav-item';
       document.getElementById('navExpense').className = viewName === 'EXPENSE' ? 'fintech-nav-item active' : 'fintech-nav-item';
+      document.getElementById('navStatus').className = viewName === 'STATUS' ? 'fintech-nav-item active' : 'fintech-nav-item';
 
       document.getElementById('viewDashboardSection').style.display = 'none';
       document.getElementById('viewIncomeSection').style.display = 'none';
       document.getElementById('viewExpenseSection').style.display = 'none';
+      document.getElementById('viewStatusSection').style.display = 'none';
 
       if (viewName === 'INCOME') {
         document.getElementById('viewIncomeSection').style.display = 'flex';
@@ -746,6 +884,18 @@
         document.getElementById('pageSubHeading').innerText = "Manage and track all your expenditure entries";
         document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i>`;
         document.getElementById('topActionArea').innerHTML = `<button class="btn-top-action expense-mode" onclick="openNewTxModal('EXPENSE')"><i class="fa-solid fa-plus"></i> New Expense</button>`;
+      } else if (viewName === 'STATUS') {
+        document.getElementById('viewStatusSection').style.display = 'flex';
+        document.getElementById('pageTitleHeading').innerText = "Status & Reports";
+        document.getElementById('pageSubHeading').innerText = "Detailed category breakdown and ledger statements";
+        document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-chart-pie"></i>`;
+        document.getElementById('topActionArea').innerHTML = `
+          <div class="fintech-date-badge">
+            <i class="fa-regular fa-calendar"></i>
+            <span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+          </div>
+        `;
+        renderStatusReports();
       } else {
         document.getElementById('viewDashboardSection').style.display = 'block';
         document.getElementById('pageTitleHeading').innerText = "Welcome Back!";
@@ -801,8 +951,8 @@
           <td class="${isInc ? 'amt-income-badge' : 'amt-expense-badge'}">₹${parseFloat(it.amount || 0).toLocaleString('en-IN')}</td>
           <td><span class="mode-pill"><i class="fa-solid fa-money-bill-1"></i> ${it.mode || 'Cash'}</span></td>
           <td style="color:#475569;"><i class="fa-solid fa-user" style="font-size:11px; margin-right:4px;"></i> ${it.createdBy || 'ADMIN'}</td>
-          <td style="color:#64748b;">${it.billUrl ? `<a href="${it.billUrl}" target="_blank">View</a>` : '-'}</td>
-          <td><button class="btn-voucher-view" onclick="alert('Voucher PDF ID: ${it.id}')"><i class="fa-solid fa-file-pdf"></i> View</button></td>
+          <td style="color:#64748b;">${it.billUrl ? `<a href="${it.billUrl}" target="_blank" style="color:#0ea5e9; font-weight:700; text-decoration:none;"><i class="fa-solid fa-paperclip"></i> View</a>` : '-'}</td>
+          <td><button class="btn-voucher-view" onclick="generateVoucherPDF('${it.id}')"><i class="fa-solid fa-file-pdf"></i> View</button></td>
           <td>
             <button class="btn-action-edit" onclick="openEditModal('${it.id}')">Edit</button>
             <button class="btn-action-del" onclick="deleteTransaction('${it.id}')">Delete</button>
@@ -906,7 +1056,11 @@
       const narr = document.getElementById('mTxNarr').value.trim();
       const amt = document.getElementById('mTxAmt').value.trim();
       const mode = document.getElementById('mTxMode').value;
-      const existingDate = document.getElementById('editTxDate').value;
+      
+      let txnDate = document.getElementById('editTxDate').value;
+      if (!txnDate || txnDate === "undefined" || txnDate === "") {
+        txnDate = new Date().toISOString().slice(0, 10);
+      }
 
       if (!narr || !amt) return alert("Please enter narration and amount!");
 
@@ -916,14 +1070,14 @@
       const payload = {
         action: actionName,
         sheetId: activeSheetId,
-        id: editId || undefined,
-        txId: editId || undefined,
+        id: editId || "",
+        txId: editId || "",
         type: modalMode,
         head: head,
         narration: narr,
         amount: amt,
         mode: mode,
-        date: existingDate || undefined,
+        date: txnDate,
         createdBy: activeUsername
       };
 
@@ -962,6 +1116,247 @@
         hideLoading();
         alert("Failed to delete entry.");
       });
+    }
+
+    /* RENDER STATUS & REPORTS (EXACT PHOTO 2 LOOK) */
+    function renderStatusReports() {
+      let totalInc = 0, totalExp = 0, incCount = 0, expCount = 0;
+      const incHeadsMap = {}, expHeadsMap = {};
+      const incModesMap = {}, expModesMap = {};
+
+      currentData.transactions.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if (t.type === 'INCOME') {
+          totalInc += amt;
+          incCount++;
+          incHeadsMap[t.head] = incHeadsMap[t.head] || { total: 0, count: 0 };
+          incHeadsMap[t.head].total += amt;
+          incHeadsMap[t.head].count += 1;
+
+          incModesMap[t.mode] = incModesMap[t.mode] || { total: 0, count: 0 };
+          incModesMap[t.mode].total += amt;
+          incModesMap[t.mode].count += 1;
+        } else if (t.type === 'EXPENSE') {
+          totalExp += amt;
+          expCount++;
+          expHeadsMap[t.head] = expHeadsMap[t.head] || { total: 0, count: 0 };
+          expHeadsMap[t.head].total += amt;
+          expHeadsMap[t.head].count += 1;
+
+          expModesMap[t.mode] = expModesMap[t.mode] || { total: 0, count: 0 };
+          expModesMap[t.mode].total += amt;
+          expModesMap[t.mode].count += 1;
+        }
+      });
+
+      const openBal = parseFloat(currentData.openingBalance) || 0;
+      const curBal = openBal + totalInc - totalExp;
+
+      document.getElementById('statCurBal').innerText = '₹' + curBal.toLocaleString('en-IN');
+      document.getElementById('statTotalInc').innerText = '₹' + totalInc.toLocaleString('en-IN');
+      document.getElementById('statTotalExp').innerText = '₹' + totalExp.toLocaleString('en-IN');
+      document.getElementById('statOpenBal').innerText = '₹' + openBal.toLocaleString('en-IN');
+      document.getElementById('statIncCount').innerText = incCount;
+      document.getElementById('statExpCount').innerText = expCount;
+
+      // Render Heads Lists
+      renderReportRows('reportIncHeadsList', incHeadsMap, 'INCOME', true);
+      renderReportRows('reportExpHeadsList', expHeadsMap, 'EXPENSE', true);
+
+      // Render Modes Lists
+      renderReportRows('reportIncModesList', incModesMap, 'INCOME', false);
+      renderReportRows('reportExpModesList', expModesMap, 'EXPENSE', false);
+    }
+
+    function renderReportRows(containerId, dataMap, type, isLedgerHead) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      const keys = Object.keys(dataMap);
+      if (keys.length === 0) {
+        container.innerHTML = `<p style="font-size:12px; color:#94a3b8; text-align:center; padding:10px;">No entries recorded</p>`;
+        return;
+      }
+
+      keys.forEach(k => {
+        const item = dataMap[k];
+        const row = document.createElement('div');
+        row.className = 'report-row-item';
+        row.innerHTML = `
+          <div class="report-row-left">
+            <strong>${k}</strong>
+            <small>${item.count} Entries</small>
+          </div>
+          <div class="report-row-right">
+            <span>₹${item.total.toLocaleString('en-IN')}</span>
+            ${isLedgerHead ? `<button class="btn-pdf-chip" onclick="generateLedgerStatementPDF('${k}', '${type}')"><i class="fa-solid fa-file-pdf"></i> PDF</button>` : ''}
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    /* REAL PDF GENERATOR 1: TRANSACTION VOUCHER */
+    function generateVoucherPDF(txId) {
+      const t = currentData.transactions.find(x => x.id === txId);
+      if (!t) return alert("Entry not found!");
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+
+      const isInc = t.type === 'INCOME';
+      const themeColor = isInc ? [22, 163, 74] : [220, 38, 38];
+
+      // Border
+      doc.setDrawColor(themeColor[0], themeColor[1], themeColor[2]);
+      doc.setLineWidth(1);
+      doc.roundedRect(8, 8, 132, 194, 4, 4);
+
+      // Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(themeColor[0], themeColor[1], themeColor[2]);
+      doc.text("COMMUNITY & EVENT BUDGET", 74, 22, { align: "center" });
+
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      doc.text(isInc ? "OFFICIAL INCOME RECEIPT" : "OFFICIAL PAYMENT VOUCHER", 74, 28, { align: "center" });
+
+      // Line
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 34, 134, 34);
+
+      // Meta info
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`Voucher ID: ${t.id}`, 14, 42);
+      doc.text(`Date: ${t.date}`, 134, 42, { align: "right" });
+
+      // Content Box
+      doc.setFillColor(248, 250, 252);
+      doc.rect(14, 48, 120, 75, "F");
+      doc.setDrawColor(226, 232, 240);
+      doc.rect(14, 48, 120, 75, "S");
+
+      doc.setFont("helvetica", "bold");
+      doc.text(isInc ? "Received From:" : "Paid To:", 18, 58);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${t.narration || "-"}`, 56, 58);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Category / Head:", 18, 70);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${t.head}`, 56, 70);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Payment Mode:", 18, 82);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${t.mode}`, 56, 82);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Created By:", 18, 94);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${t.createdBy || "SUPERADMIN"}`, 56, 94);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Total Amount:", 18, 110);
+      doc.setFontSize(14);
+      doc.setTextColor(themeColor[0], themeColor[1], themeColor[2]);
+      doc.text(`Rs. ${parseFloat(t.amount).toLocaleString('en-IN')}/-`, 56, 110);
+
+      // Signatures
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+      doc.line(20, 165, 55, 165);
+      doc.text("Receiver Signature", 37.5, 170, { align: "center" });
+
+      doc.line(90, 165, 128, 165);
+      doc.text("Authorized Signatory", 109, 170, { align: "center" });
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text("This is a computer generated digital voucher.", 74, 192, { align: "center" });
+
+      doc.save(`Voucher_${t.id}.pdf`);
+    }
+
+    /* REAL PDF GENERATOR 2: LEDGER HEAD STATEMENT */
+    function generateLedgerStatementPDF(headName, type) {
+      const items = currentData.transactions.filter(t => t.type === type && t.head === headName);
+      if (items.length === 0) return alert("No transactions found for this head!");
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+      const isInc = type === 'INCOME';
+      const themeColor = isInc ? [22, 163, 74] : [220, 38, 38];
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(themeColor[0], themeColor[1], themeColor[2]);
+      doc.text("COMMUNITY & EVENT BUDGET TRACKER", 105, 18, { align: "center" });
+
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`Ledger Statement: ${headName} (${type})`, 105, 26, { align: "center" });
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Generated on: ${new Date().toLocaleString('en-GB')}`, 105, 32, { align: "center" });
+
+      // Table Header
+      let y = 42;
+      doc.setFillColor(241, 245, 249);
+      doc.rect(14, y, 182, 8, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+
+      doc.text("Date", 18, y + 5.5);
+      doc.text("Narration / Name", 50, y + 5.5);
+      doc.text("Mode", 120, y + 5.5);
+      doc.text("Created By", 145, y + 5.5);
+      doc.text("Amount (Rs.)", 192, y + 5.5, { align: "right" });
+
+      y += 10;
+      doc.setFont("helvetica", "normal");
+      let grandTotal = 0;
+
+      items.forEach((it, i) => {
+        if (y > 275) {
+          doc.addPage();
+          y = 20;
+        }
+
+        const amt = parseFloat(it.amount) || 0;
+        grandTotal += amt;
+
+        doc.text(`${it.date || "-"}`, 18, y);
+        doc.text(`${(it.narration || "-").substring(0, 32)}`, 50, y);
+        doc.text(`${it.mode || "Cash"}`, 120, y);
+        doc.text(`${it.createdBy || "Admin"}`, 145, y);
+        doc.text(`${amt.toLocaleString('en-IN')}`, 192, y, { align: "right" });
+
+        doc.setDrawColor(241, 245, 249);
+        doc.line(14, y + 2.5, 196, y + 2.5);
+
+        y += 8;
+      });
+
+      // Total Row
+      y += 4;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(14, y, 182, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(themeColor[0], themeColor[1], themeColor[2]);
+      doc.text("Total Amount:", 120, y + 7);
+      doc.text(`Rs. ${grandTotal.toLocaleString('en-IN')}/-`, 192, y + 7, { align: "right" });
+
+      doc.save(`Statement_${headName.replace(/\s+/g, '_')}.pdf`);
     }
 
     function renderTrendChart() {

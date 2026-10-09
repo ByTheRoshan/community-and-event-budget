@@ -4,211 +4,377 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Committee & Event Budget Tracker</title>
-  <!-- QR Code & Scanner Libraries -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
-      --primary: #d9663b;
-      --primary-dark: #b54d26;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --subtext: #64748b;
-      --border: #e2e8f0;
+      --primary-blue: #1d4ed8;
+      --primary-gradient: linear-gradient(135deg, #1d4ed8 0%, #059669 100%);
+      --dark-navy: #091e42;
+      --bg-page: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
       --income: #16a34a;
       --expense: #dc2626;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 50px; }
-    .header { background: #1e293b; color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
-    .header h1 { font-size: 1.05rem; font-weight: 600; }
-    .badge { font-size: 0.75rem; background: var(--primary); padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-    .container { max-width: 650px; margin: 0 auto; padding: 16px; }
-    .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 16px; }
-    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-    .stat-box { background: #f1f5f9; padding: 12px; border-radius: 8px; }
-    .stat-title { font-size: 0.75rem; color: var(--subtext); text-transform: uppercase; font-weight: 600; }
-    .stat-val { font-size: 1.25rem; font-weight: bold; margin-top: 4px; }
-    .net-balance { grid-column: span 2; background: #fff7ed; border: 1px solid #ffedd5; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 10px 14px; border-radius: 8px; border: none; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-danger { background: var(--expense); color: white; }
-    .btn-secondary { background: #e2e8f0; color: #1e293b; }
-    .btn-scanner { background: #0f172a; color: white; margin-top: 8px; }
-    .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--subtext); }
-    .form-control { width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; }
-    .tx-item { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .tx-left h4 { font-size: 0.95rem; margin-bottom: 4px; }
-    .tx-left p { font-size: 0.8rem; color: var(--subtext); }
-    .tx-right { text-align: right; }
-    .tx-amount { font-weight: bold; font-size: 1.05rem; }
-    .tx-del { background: none; border: none; color: #ef4444; font-size: 0.8rem; cursor: pointer; margin-top: 4px; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-    .tab-btn { background: none; border: none; padding: 8px 14px; font-size: 0.9rem; font-weight: 600; color: var(--subtext); cursor: pointer; border-radius: 6px; }
-    .tab-btn.active { background: #e2e8f0; color: var(--text); }
-    .actions-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-    .spinner { width: 38px; height: 38px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    body { background-color: var(--bg-page); color: var(--text-main); min-height: 100vh; }
+
+    /* MODERN SPLIT SCREEN LOGIN / JOIN UI */
+    .portal-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: row;
+      background: #ffffff;
+    }
+
+    .portal-branding {
+      flex: 1.1;
+      background: linear-gradient(145deg, #02122c 0%, #092552 60%, #0369a1 100%);
+      color: white;
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .portal-branding::after {
+      content: "";
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+      bottom: -80px;
+      right: -80px;
+      border-radius: 50%;
+    }
+
+    .brand-logo-area { display: flex; align-items: center; gap: 14px; }
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-gradient);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    .brand-title-group h2 { font-size: 1.5rem; font-weight: 700; color: #ffffff; }
+    .brand-title-group span { font-size: 1.15rem; color: #34d399; font-weight: 600; }
+    .brand-tagline { font-size: 0.95rem; color: #93c5fd; margin-top: 14px; word-spacing: 4px; }
+    .brand-desc { font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; margin-top: 18px; max-width: 460px; }
+
+    .brand-illustration {
+      margin: 40px 0;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      max-width: 420px;
+    }
+    .illus-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(52, 211, 153, 0.15); color: #34d399; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+
+    .brand-features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+    .feat-item { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #e2e8f0; }
+
+    .portal-form-side {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      background: #f8fafc;
+    }
+
+    .modern-auth-card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.08);
+      border: 1px solid var(--border-color);
+    }
+
+    .auth-header { text-align: center; margin-bottom: 26px; }
+    .auth-avatar {
+      width: 56px;
+      height: 56px;
+      background: #ecfdf5;
+      color: #059669;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+    .auth-header h3 { font-size: 1.6rem; color: var(--text-main); font-weight: 700; }
+    .auth-header p { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
+    .active-badge-tag { display: inline-block; background: #e0f2fe; color: #0284c7; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
+
+    .input-box {
+      position: relative;
+      margin-bottom: 18px;
+    }
+    .input-box span {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .input-box input {
+      width: 100%;
+      padding: 14px 14px 14px 44px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: #f8fafc;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .input-box input:focus {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-gradient-submit {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--primary-gradient);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-gradient-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(29, 78, 216, 0.4);
+    }
+
+    .btn-outline-action {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border-color);
+      background: #ffffff;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.2s;
+    }
+    .btn-outline-action:hover { background: #f1f5f9; }
+
+    .saved-budgets-list {
+      max-height: 180px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+    .saved-budget-chip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .saved-budget-chip:hover { border-color: #cbd5e1; background: #ffffff; }
+
+    /* DASHBOARD STYLES */
+    .app-header { background: #0f172a; color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .dash-container { max-width: 650px; margin: 20px auto; padding: 0 16px; }
+    .stat-card-net { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .stat-box-sm { background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .btn-chip { padding: 8px 14px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .tab-nav { display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
+    .tab-link { background: none; border: none; padding: 8px 16px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+    .tab-link.active { color: #1d4ed8; border-color: #1d4ed8; }
+    .tx-row-item { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* OVERLAYS */
+    .loading-spin { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    .spinner-ring { width: 44px; height: 44px; border: 4px solid #f1f5f9; border-top: 4px solid #1d4ed8; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); padding: 20px; z-index: 200; overflow-y: auto; display: flex; align-items: center; justify-content: center; }
+
+    @media (max-width: 860px) {
+      .portal-wrapper { flex-direction: column; }
+      .portal-branding { padding: 40px 24px; }
+      .brand-illustration { display: none; }
+    }
   </style>
 </head>
 <body>
 
-  <div id="loading" class="loading-overlay" style="display: none;">
-    <div class="spinner"></div>
-    <p style="margin-top: 12px; font-weight: 600;" id="loadingText">Connecting...</p>
+  <!-- LOADING SPINNER -->
+  <div id="loading" class="loading-spin" style="display: none;">
+    <div class="spinner-ring"></div>
+    <p style="margin-top: 14px; font-weight: 600; color: #1e293b;" id="loadingText">Connecting...</p>
   </div>
 
-  <div class="header">
-    <h1 id="appTitle">Committee & Event Budget Tracker</h1>
-    <div id="userBadge" class="badge" style="display: none;">USER</div>
-  </div>
-
-  <div class="container">
-
-    <!-- SCREEN 1: SAVED EVENTS & JOIN -->
-    <div id="screenEvents">
-      <div class="card">
-        <h2 style="font-size: 1.1rem; margin-bottom: 10px;">Connected Budgets</h2>
-        <div id="eventsList"></div>
+  <!-- PORTAL / LOGIN / JOIN SCREEN -->
+  <div id="screenPortal" class="portal-wrapper">
+    
+    <!-- LEFT SIDE BRANDING (MATCHING IMAGE 2) -->
+    <div class="portal-branding">
+      <div>
+        <div class="brand-logo-area">
+          <div class="brand-icon">₹</div>
+          <div class="brand-title-group">
+            <h2>Committee & Event</h2>
+            <span>Budget Tracker</span>
+          </div>
+        </div>
+        <p class="brand-tagline">Plan • Track • Manage • Together</p>
+        <p class="brand-desc">Efficiently manage your committee budgets and events with ease. Keep track of expenses, join events, and stay organized — all in one place.</p>
       </div>
 
-      <div class="card">
-        <h3 style="font-size: 1rem; margin-bottom: 12px;">🔗 Join Event</h3>
-        <div class="form-group">
-          <input type="text" id="inputJoinSheetId" class="form-control" placeholder="Paste Sheet ID or Google Sheet Link">
-        </div>
-        <button class="btn btn-primary" onclick="joinSheetManual()">Connect Event</button>
-        <button class="btn btn-scanner" onclick="toggleQRScanner()">📷 Scan Event QR Code</button>
-        
-        <div id="scannerSection" style="display: none; margin-top: 15px;">
-          <div id="reader"></div>
-          <button class="btn btn-secondary btn-sm" onclick="stopQRScanner()">Close Camera</button>
-        </div>
+      <div class="brand-illustration">
+        <div class="illus-badge">✓ Live Event Synchronization</div>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 10px;">Direct Google Sheets cloud connection with automated backups & PDF audit trails.</p>
+      </div>
+
+      <div class="brand-features">
+        <div class="feat-item">🛡️ Secure & Reliable</div>
+        <div class="feat-item">📊 Event Management</div>
+        <div class="feat-item">💳 Budget Tracking</div>
+        <div class="feat-item">👥 Better Together</div>
       </div>
     </div>
 
-    <!-- SCREEN 2: LOGIN -->
-    <div id="screenLogin" style="display: none;">
-      <div class="card">
-        <h2 id="loginEventName" style="font-size: 1.2rem; color: var(--primary); margin-bottom: 14px; text-align: center;">Event Login</h2>
-        <div class="form-group">
-          <label>Username</label>
-          <input type="text" id="loginUser" class="form-control" value="SUPERADMIN">
+    <!-- RIGHT SIDE AUTH / CONNECT CARD -->
+    <div class="portal-form-side">
+      <div class="modern-auth-card">
+
+        <!-- STEP A: CONNECT EVENT OR SELECT SAVED -->
+        <div id="boxConnectEvent">
+          <div class="auth-header">
+            <div class="auth-avatar">🔗</div>
+            <h3>Join Event</h3>
+            <p>Connect your event budget to continue</p>
+          </div>
+
+          <div id="savedEventsContainer" style="display: none;">
+            <p style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">SAVED BUDGETS</p>
+            <div id="eventsList" class="saved-budgets-list"></div>
+          </div>
+
+          <div class="input-box">
+            <span>📎</span>
+            <input type="text" id="inputJoinSheetId" placeholder="Paste Sheet ID or Google Sheet Link">
+          </div>
+
+          <button class="btn-gradient-submit" onclick="joinSheetManual()">Connect Event →</button>
+          <button class="btn-outline-action" onclick="toggleQRScanner()">📷 Scan Event QR Code</button>
+
+          <div id="scannerSection" style="display: none; margin-top: 16px;">
+            <div id="reader" style="border-radius: 12px; overflow: hidden;"></div>
+            <button class="btn-outline-action" onclick="stopQRScanner()">Close Camera</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="loginPass" class="form-control" value="admin123">
+
+        <!-- STEP B: LOGIN CARD (MATCHING IMAGE 2 EXACTLY) -->
+        <div id="boxLoginEvent" style="display: none;">
+          <div class="auth-header">
+            <div class="auth-avatar">👤</div>
+            <h3>Welcome Back!</h3>
+            <p>Login to your account to continue</p>
+            <div class="active-badge-tag" id="activeEventBadgeTag">Event: Mandal</div>
+          </div>
+
+          <div class="input-box">
+            <span>👤</span>
+            <input type="text" id="loginUser" placeholder="Username" value="SUPERADMIN">
+          </div>
+
+          <div class="input-box">
+            <span>🔒</span>
+            <input type="password" id="loginPass" placeholder="Password" value="admin123">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 18px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" checked> Remember me
+            </label>
+            <span style="color: #2563eb; cursor: pointer;">Forgot password?</span>
+          </div>
+
+          <button class="btn-gradient-submit" onclick="submitLogin()">→ Login</button>
+          <button class="btn-outline-action" onclick="showConnectBox()">Switch Event</button>
+
+          <p style="text-align: center; font-size: 0.75rem; color: #94a3b8; margin-top: 20px;">Secure Login 🛡️</p>
         </div>
-        <button class="btn btn-primary" onclick="submitLogin()">Login</button>
-        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="showEventsScreen()">Back to Events</button>
+
       </div>
     </div>
 
-    <!-- SCREEN 3: DASHBOARD -->
-    <div id="screenDashboard" style="display: none;">
-      <div class="card net-balance">
-        <span class="stat-title">Closing Balance</span>
-        <div id="valNetBalance" class="stat-val" style="color: var(--primary-dark); font-size: 1.8rem;">₹ 0.00</div>
+  </div>
+
+  <!-- MAIN DASHBOARD SCREEN (OPENS AFTER LOGIN) -->
+  <div id="screenDashboard" style="display: none;">
+    <div class="app-header">
+      <h1 id="appTitle" style="font-size: 1.1rem; font-weight: 600;">Committee & Event Budget Tracker</h1>
+      <div id="userBadge" style="background: #16a34a; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 6px;">SUPER_ADMIN</div>
+    </div>
+
+    <div class="dash-container">
+      
+      <!-- CLOSING BALANCE CARD -->
+      <div class="stat-card-net">
+        <span style="font-size: 0.75rem; font-weight: 700; color: #9a3412; text-transform: uppercase;">Closing Balance</span>
+        <div id="valNetBalance" style="font-size: 2rem; font-weight: 800; color: #c2410c; margin-top: 4px;">₹ 0.00</div>
       </div>
 
-      <div class="summary-grid">
-        <div class="stat-box">
-          <span class="stat-title">Total Income (Cr.)</span>
-          <div id="valIncome" class="stat-val" style="color: var(--income);">₹ 0</div>
+      <!-- INCOME / EXPENSE CARDS -->
+      <div class="stat-grid">
+        <div class="stat-box-sm">
+          <span style="font-size: 0.75rem; font-weight: 700; color: #64748b;">TOTAL INCOME</span>
+          <div id="valIncome" style="font-size: 1.3rem; font-weight: 700; color: var(--income); margin-top: 4px;">₹ 0</div>
         </div>
-        <div class="stat-box">
-          <span class="stat-title">Total Expense (Dr.)</span>
-          <div id="valExpense" class="stat-val" style="color: var(--expense);">₹ 0</div>
+        <div class="stat-box-sm">
+          <span style="font-size: 0.75rem; font-weight: 700; color: #64748b;">TOTAL EXPENSE</span>
+          <div id="valExpense" style="font-size: 1.3rem; font-weight: 700; color: var(--expense); margin-top: 4px;">₹ 0</div>
         </div>
       </div>
 
-      <!-- Action Buttons like Android App -->
-      <div class="actions-grid">
-        <button class="btn btn-primary btn-sm" onclick="showNewTxModal('INCOME')">+ Income</button>
-        <button class="btn btn-danger btn-sm" onclick="showNewTxModal('EXPENSE')">+ Expense</button>
-        <button class="btn btn-secondary btn-sm" onclick="openShareModal()">🔗 Share / QR</button>
-        <button class="btn btn-secondary btn-sm" onclick="openReportModal()">📊 Report</button>
-        <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Print / PDF</button>
-        <button class="btn btn-secondary btn-sm" onclick="showEventsScreen()">Switch Event</button>
+      <!-- ACTION BUTTONS -->
+      <div class="action-row">
+        <button class="btn-chip" style="background: var(--income); color: white;" onclick="showNewTxModal('INCOME')">+ Income</button>
+        <button class="btn-chip" style="background: var(--expense); color: white;" onclick="showNewTxModal('EXPENSE')">+ Expense</button>
+        <button class="btn-chip" style="background: #0f172a; color: white;" onclick="openShareModal()">🔗 Share / QR</button>
+        <button class="btn-chip" style="background: #e2e8f0; color: #0f172a;" onclick="showConnectBox()">Switch Event</button>
       </div>
 
-      <!-- Search Box -->
-      <div class="card" style="padding: 10px 14px; margin-bottom: 12px;">
-        <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search by Person, Head, Mode..." oninput="renderTransactions()">
+      <!-- TABS -->
+      <div class="tab-nav">
+        <button class="tab-link active" id="tabIncBtn" onclick="switchTxTab('INCOME')">Income Entries</button>
+        <button class="tab-link" id="tabExpBtn" onclick="switchTxTab('EXPENSE')">Expense Entries</button>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab-btn active" id="tabIncBtn" onclick="switchTxTab('INCOME')">Income Entries</button>
-        <button class="tab-btn" id="tabExpBtn" onclick="switchTxTab('EXPENSE')">Expense Entries</button>
-      </div>
-
-      <!-- Transaction List -->
+      <!-- LIST -->
       <div id="txContainer"></div>
     </div>
-
-    <!-- MODAL 1: ADD TRANSACTION -->
-    <div id="modalAddTx" class="modal-overlay" style="display: none;">
-      <div class="card" style="width: 100%; max-width: 480px;">
-        <h3 id="modalTxTitle" style="margin-bottom: 14px;">Add Entry</h3>
-        <div class="form-group">
-          <label>Category / Head</label>
-          <select id="modalTxHead" class="form-control"></select>
-        </div>
-        <div class="form-group">
-          <label>Narration / Person Name</label>
-          <input type="text" id="modalTxNarr" class="form-control" placeholder="Payer / Purpose name">
-        </div>
-        <div class="form-group">
-          <label>Amount (₹)</label>
-          <input type="number" id="modalTxAmount" class="form-control" placeholder="e.g. 500">
-        </div>
-        <div class="form-group">
-          <label>Payment Mode</label>
-          <select id="modalTxMode" class="form-control">
-            <option>Cash</option>
-            <option>Online / UPI</option>
-            <option>Bank Transfer</option>
-            <option>Cheque</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Bill / Receipt URL (Optional)</label>
-          <input type="text" id="modalTxBill" class="form-control" placeholder="Google Drive Image link">
-        </div>
-        <button class="btn btn-primary" onclick="submitNewTransaction()">Save Entry</button>
-        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="document.getElementById('modalAddTx').style.display='none'">Cancel</button>
-      </div>
-    </div>
-
-    <!-- MODAL 2: SHARE EVENT & QR CODE -->
-    <div id="modalShare" class="modal-overlay" style="display: none;">
-      <div class="card" style="width: 100%; max-width: 420px; text-align: center;">
-        <h3 style="margin-bottom: 12px;">📱 Share Event with Members</h3>
-        <div id="qrcodeCanvas" style="display: inline-block; margin: 10px auto; padding: 10px; background: white; border-radius: 8px; border: 1px solid var(--border);"></div>
-        <p style="font-size: 0.85rem; color: var(--subtext); margin-top: 8px;">Scan this QR code from another device to open this budget directly!</p>
-        <button class="btn btn-primary" style="background: #25D366; margin-top: 14px;" onclick="shareViaWhatsApp()">📲 Share on WhatsApp</button>
-        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="copyWebLink()">📋 Copy Direct Link</button>
-        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="document.getElementById('modalShare').style.display='none'">Close</button>
-      </div>
-    </div>
-
-    <!-- MODAL 3: CATEGORY-WISE SUMMARY REPORT -->
-    <div id="modalReport" class="modal-overlay" style="display: none;">
-      <div class="card" style="width: 100%; max-width: 500px;">
-        <h3 style="margin-bottom: 14px;">📊 Head-wise Summary</h3>
-        <div id="reportContainer"></div>
-        <button class="btn btn-secondary" style="margin-top: 14px;" onclick="document.getElementById('modalReport').style.display='none'">Close</button>
-      </div>
-    </div>
-
   </div>
 
   <script>
@@ -220,6 +386,18 @@
     let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], openingBalance: 0 };
     let html5QrCode = null;
 
+    function cleanSheetId(str) {
+      if (!str) return "";
+      str = str.trim();
+      if (str.includes('join=')) {
+        str = str.split('join=')[1].split('&')[0].split(' ')[0];
+      }
+      if (str.includes('/d/')) {
+        str = str.split('/d/')[1].split('/')[0];
+      }
+      return str.trim();
+    }
+
     function apiCall(params) {
       return new Promise((resolve, reject) => {
         const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
@@ -228,17 +406,15 @@
           document.body.removeChild(script);
           resolve(data);
         };
-
         let queryString = Object.keys(params)
           .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
           .join('&');
-
         const script = document.createElement('script');
         script.src = `${SCRIPT_URL}?${queryString}&callback=${callbackName}`;
         script.onerror = function() {
           delete window[callbackName];
           try { document.body.removeChild(script); } catch(e){}
-          reject(new Error("Network Error connecting to Apps Script"));
+          reject(new Error("Network Error"));
         };
         document.body.appendChild(script);
       });
@@ -254,13 +430,6 @@
       }
     };
 
-    function cleanSheetId(str) {
-      if (str.includes('/d/')) {
-        return str.split('/d/')[1].split('/')[0];
-      }
-      return str.trim();
-    }
-
     function showLoading(msg) {
       document.getElementById('loadingText').innerText = msg;
       document.getElementById('loading').style.display = 'flex';
@@ -270,27 +439,23 @@
     }
 
     function renderSavedEvents() {
-      document.getElementById('screenEvents').style.display = 'block';
-      document.getElementById('screenLogin').style.display = 'none';
-      document.getElementById('screenDashboard').style.display = 'none';
-      document.getElementById('userBadge').style.display = 'none';
-
       const events = JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
       const container = document.getElementById('eventsList');
+      const wrap = document.getElementById('savedEventsContainer');
       container.innerHTML = '';
 
-      if (events.length === 0) {
-        container.innerHTML = '<p style="color: var(--subtext); font-size: 0.85rem;">No connected events yet. Paste a Sheet ID below or scan QR code.</p>';
-        return;
+      if (events.length > 0) {
+        wrap.style.display = 'block';
+        events.forEach(e => {
+          const item = document.createElement('div');
+          item.className = 'saved-budget-chip';
+          item.innerHTML = `<div><strong>📁 ${e.name}</strong><br><small style="color:#64748b;">${e.id.substring(0, 10)}...</small></div><button class="btn-chip" style="background:#1d4ed8; color:white;">Open</button>`;
+          item.onclick = () => openLoginForEvent(e.id, e.name);
+          container.appendChild(item);
+        });
+      } else {
+        wrap.style.display = 'none';
       }
-
-      events.forEach(e => {
-        const item = document.createElement('div');
-        item.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer;";
-        item.innerHTML = `<div><strong>📁 ${e.name}</strong><br><small style="color: var(--subtext);">${e.id.substring(0, 10)}...</small></div><button class="btn btn-primary btn-sm">Open</button>`;
-        item.onclick = () => openLoginForEvent(e.id, e.name);
-        container.appendChild(item);
-      });
     }
 
     function joinSheetManual() {
@@ -300,7 +465,7 @@
     }
 
     function connectToSheet(sheetId) {
-      showLoading('Verifying Sheet Access...');
+      showLoading('Connecting to Budget...');
       apiCall({ action: 'getEventInfo', sheetId: sheetId })
         .then(res => {
           hideLoading();
@@ -311,7 +476,7 @@
             alert('Cannot access sheet: ' + res.message);
           }
         })
-        .catch(err => {
+        .catch(() => {
           hideLoading();
           alert('Network Error connecting to sheet.');
         });
@@ -327,12 +492,16 @@
 
     function openLoginForEvent(sheetId, name) {
       activeSheetId = sheetId;
-      document.getElementById('screenEvents').style.display = 'none';
-      document.getElementById('screenLogin').style.display = 'block';
-      document.getElementById('loginEventName').innerText = name;
+      document.getElementById('boxConnectEvent').style.display = 'none';
+      document.getElementById('boxLoginEvent').style.display = 'block';
+      document.getElementById('activeEventBadgeTag').innerText = "Event: " + name;
     }
 
-    function showEventsScreen() {
+    function showConnectBox() {
+      document.getElementById('screenDashboard').style.display = 'none';
+      document.getElementById('screenPortal').style.display = 'flex';
+      document.getElementById('boxLoginEvent').style.display = 'none';
+      document.getElementById('boxConnectEvent').style.display = 'block';
       renderSavedEvents();
     }
 
@@ -366,10 +535,9 @@
           hideLoading();
           if (res.success) {
             currentData = res;
-            document.getElementById('screenLogin').style.display = 'none';
+            document.getElementById('screenPortal').style.display = 'none';
             document.getElementById('screenDashboard').style.display = 'block';
             document.getElementById('userBadge').innerText = activeRole;
-            document.getElementById('userBadge').style.display = 'block';
             renderSummary();
             renderTransactions();
           }
@@ -395,185 +563,37 @@
 
     function switchTxTab(type) {
       currentTab = type;
-      document.getElementById('tabIncBtn').className = type === 'INCOME' ? 'tab-btn active' : 'tab-btn';
-      document.getElementById('tabExpBtn').className = type === 'EXPENSE' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tabIncBtn').className = type === 'INCOME' ? 'tab-link active' : 'tab-link';
+      document.getElementById('tabExpBtn').className = type === 'EXPENSE' ? 'tab-link active' : 'tab-link';
       renderTransactions();
     }
 
     function renderTransactions() {
       const container = document.getElementById('txContainer');
       container.innerHTML = '';
-      const query = (document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase().trim() : '');
-
-      let filtered = currentData.transactions.filter(t => t.type === currentTab);
-      if (query) {
-        filtered = filtered.filter(t => 
-          (t.head && t.head.toLowerCase().includes(query)) ||
-          (t.narration && t.narration.toLowerCase().includes(query)) ||
-          (t.mode && t.mode.toLowerCase().includes(query)) ||
-          (t.date && t.date.includes(query))
-        );
-      }
+      const filtered = currentData.transactions.filter(t => t.type === currentTab);
 
       if (filtered.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color: var(--subtext); padding: 20px;">No entries found.</p>';
+        container.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">No entries recorded.</p>';
         return;
       }
 
       filtered.forEach(t => {
         const item = document.createElement('div');
-        item.className = 'tx-item';
+        item.className = 'tx-row-item';
         item.innerHTML = `
-          <div class="tx-left">
-            <h4>${t.head}</h4>
-            <p>${t.narration || '-'} | ${t.mode} | ${t.date}</p>
-            ${t.billUrl ? `<a href="${t.billUrl}" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:bold;">📎 View Receipt / Bill</a>` : ''}
+          <div>
+            <h4 style="font-size:0.95rem;">${t.head}</h4>
+            <p style="font-size:0.8rem; color:#64748b;">${t.narration || '-'} | ${t.mode} | ${t.date}</p>
           </div>
-          <div class="tx-right">
-            <div class="tx-amount" style="color: ${t.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">₹ ${t.amount}</div>
-            ${activeRole !== 'USER' ? `<button class="tx-del" onclick="deleteEntry('${t.id}')">Delete</button>` : ''}
+          <div style="font-weight:700; color: ${t.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">
+            ₹ ${t.amount}
           </div>
         `;
         container.appendChild(item);
       });
     }
 
-    let pendingType = "INCOME";
-    function showNewTxModal(type) {
-      if (activeRole === 'USER') return alert('Only Admins can add entries');
-      pendingType = type;
-      document.getElementById('modalTxTitle').innerText = type === 'INCOME' ? 'New Income Entry' : 'New Expense Entry';
-      const heads = type === 'INCOME' ? currentData.incomeHeads : currentData.expenseHeads;
-      const select = document.getElementById('modalTxHead');
-      select.innerHTML = '';
-      heads.forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h; opt.innerText = h;
-        select.appendChild(opt);
-      });
-      document.getElementById('modalTxNarr').value = '';
-      document.getElementById('modalTxAmount').value = '';
-      document.getElementById('modalTxBill').value = '';
-      document.getElementById('modalAddTx').style.display = 'flex';
-    }
-
-    function submitNewTransaction() {
-      const head = document.getElementById('modalTxHead').value;
-      const narr = document.getElementById('modalTxNarr').value.trim();
-      const amt = document.getElementById('modalTxAmount').value.trim();
-      const mode = document.getElementById('modalTxMode').value;
-      const bill = document.getElementById('modalTxBill').value.trim();
-      const today = new Date().toISOString().split('T')[0];
-
-      if (!narr || !amt) return alert('Enter name and amount');
-
-      showLoading('Saving entry...');
-      document.getElementById('modalAddTx').style.display = 'none';
-
-      apiCall({
-        action: 'addTransaction',
-        sheetId: activeSheetId,
-        type: pendingType,
-        head: head,
-        narration: narr,
-        amount: amt,
-        mode: mode,
-        date: today,
-        createdBy: activeUsername,
-        billUrl: bill
-      })
-      .then(res => {
-        hideLoading();
-        if (res.success) {
-          loadDashboard();
-        } else {
-          alert('Save error: ' + res.message);
-        }
-      })
-      .catch(() => {
-        hideLoading();
-        alert('Network save error');
-      });
-    }
-
-    function deleteEntry(txId) {
-      if (!confirm('Are you sure you want to delete this entry?')) return;
-      showLoading('Removing entry...');
-      apiCall({
-        action: 'deleteTransaction',
-        sheetId: activeSheetId,
-        txId: txId
-      })
-      .then(res => {
-        hideLoading();
-        if (res.success) {
-          loadDashboard();
-        } else {
-          alert('Delete error: ' + res.message);
-        }
-      })
-      .catch(() => {
-        hideLoading();
-        alert('Network delete error');
-      });
-    }
-
-    // SHARE & QR LOGIC
-    function getShareableLink() {
-      return `${window.location.origin}${window.location.pathname}?join=${activeSheetId}`;
-    }
-
-    function openShareModal() {
-      const link = getShareableLink();
-      const qrContainer = document.getElementById('qrcodeCanvas');
-      qrContainer.innerHTML = '';
-      new QRCode(qrContainer, {
-        text: link,
-        width: 180,
-        height: 180
-      });
-      document.getElementById('modalShare').style.display = 'flex';
-    }
-
-    function shareViaWhatsApp() {
-      const link = getShareableLink();
-      const text = `*Committee & Event Budget*%0AJoin our event live budget tracker here:%0A${encodeURIComponent(link)}`;
-      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
-    }
-
-    function copyWebLink() {
-      navigator.clipboard.writeText(getShareableLink()).then(() => {
-        alert('Link copied to clipboard!');
-      });
-    }
-
-    // REPORT LOGIC
-    function openReportModal() {
-      const container = document.getElementById('reportContainer');
-      const headMap = {};
-      currentData.transactions.forEach(t => {
-        const amt = parseFloat(t.amount) || 0;
-        if (!headMap[t.head]) headMap[t.head] = { type: t.type, total: 0, count: 0 };
-        headMap[t.head].total += amt;
-        headMap[t.head].count += 1;
-      });
-
-      let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
-      Object.keys(headMap).forEach(h => {
-        const item = headMap[h];
-        html += `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid var(--border);">
-            <div><strong>${h}</strong><br><small style="color:var(--subtext);">${item.count} entries</small></div>
-            <strong style="color:${item.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">₹ ${item.total}</strong>
-          </div>
-        `;
-      });
-      html += '</div>';
-      container.innerHTML = html || '<p>No data recorded yet.</p>';
-      document.getElementById('modalReport').style.display = 'flex';
-    }
-
-    // QR SCANNER
     function toggleQRScanner() {
       const section = document.getElementById('scannerSection');
       section.style.display = 'block';
@@ -585,11 +605,7 @@
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
           stopQRScanner();
-          let targetId = decodedText;
-          if (decodedText.includes('join=')) {
-            targetId = decodedText.split('join=')[1].split('&')[0];
-          }
-          connectToSheet(cleanSheetId(targetId));
+          connectToSheet(cleanSheetId(decodedText));
         },
         () => {}
       ).catch(err => {

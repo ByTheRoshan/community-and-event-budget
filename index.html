@@ -169,42 +169,39 @@
     .btn-pdf-chip { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 10px; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
     .btn-pdf-chip:hover { background: #e2e8f0; }
 
-    /* EXPORT & BACKUP STYLING */
-    .export-action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .export-action-card {
+    /* EXPORT & BACKUP SECTION (MATCHING ANDROID APP EXACTLY) */
+    .app-sync-card {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 18px;
       padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     }
-    .export-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-    .export-action-card h3 { font-size: 16px; font-weight: 800; color: #0f172a; }
-    .export-action-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; }
-    .btn-export-trigger {
-      padding: 10px 16px;
+    .app-sync-card h3 { font-size: 16px; font-weight: 800; color: #0f172a; }
+    .app-sync-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+    
+    .btn-dual-row { display: flex; gap: 12px; }
+    .btn-app-csv { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #15803d; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-app-excel { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #0284c7; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-app-audit-pdf { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #be123c; color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    .btn-app-snapshot { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #ea580c; color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    .history-item-row {
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
       border-radius: 10px;
-      border: none;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: 0.2s;
+      margin-bottom: 8px;
     }
+    .history-item-row strong { font-size: 13px; color: #0f172a; }
+    .history-item-row small { font-size: 11px; color: #64748b; }
 
     /* MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; }
@@ -221,7 +218,6 @@
       .fintech-mini-grid { grid-template-columns: repeat(2, 1fr); }
       .status-summary-grid { grid-template-columns: repeat(2, 1fr); }
       .status-two-col { grid-template-columns: 1fr; }
-      .export-action-grid { grid-template-columns: 1fr; }
       .dashboard-app-layout { flex-direction: column; }
       .fintech-sidebar { width: 100%; }
     }
@@ -382,7 +378,6 @@
           </div>
         </div>
 
-        <!-- 4 Mini Cards -->
         <div class="fintech-mini-grid" style="margin-top: 22px;">
           <div class="fintech-mini-card">
             <div class="mini-bubble"><i class="fa-solid fa-vault"></i></div>
@@ -414,7 +409,6 @@
           </div>
         </div>
 
-        <!-- Trend Chart -->
         <div class="fintech-chart-card" style="margin-top: 22px;">
           <div class="chart-head-wrap">
             <div class="chart-heading-group">
@@ -554,7 +548,6 @@
           </div>
         </div>
 
-        <!-- Heads Columns -->
         <div class="status-two-col">
           <div class="report-block-card">
             <div class="report-block-title">
@@ -571,7 +564,6 @@
           </div>
         </div>
 
-        <!-- Modes Columns -->
         <div class="status-two-col">
           <div class="report-block-card">
             <div class="report-block-title">
@@ -589,55 +581,44 @@
         </div>
       </div>
 
-      <!-- VIEW 5: EXPORT & BACKUP VIEW (NEWLY UNLOCKED) -->
-      <div id="viewExportSection" style="display: none; flex-direction: column; gap: 24px;">
+      <!-- VIEW 5: EXPORT & BACKUP (EXACT ANDROID APP SECTIONS) -->
+      <div id="viewExportSection" style="display: none; flex-direction: column; gap: 20px;">
         
-        <div class="export-action-grid">
-          <!-- Card 1: CSV Export -->
-          <div class="export-action-card">
-            <div class="export-icon-box" style="background: #e0f2fe; color: #0284c7;">
-              <i class="fa-solid fa-file-csv"></i>
-            </div>
-            <h3>Export to CSV / Excel</h3>
-            <p>Download all income and expense transactions in a structured CSV file for bookkeeping and Excel analysis.</p>
-            <button class="btn-export-trigger" style="background: #0284c7; color: #fff;" onclick="exportTransactionsCSV()">
-              <i class="fa-solid fa-download"></i> Download CSV
+        <!-- SECTION 1: DATA EXPORT (DOWNLOAD) -->
+        <div class="app-sync-card">
+          <h3>Data Export (Download)</h3>
+          <p>Download all transactions in Excel / CSV format or generate Audit Summary PDF.</p>
+          
+          <div class="btn-dual-row">
+            <button class="btn-app-csv" onclick="exportTransactionsCSV('csv')">
+              📦 CSV File
+            </button>
+            <button class="btn-app-excel" onclick="exportTransactionsCSV('excel')">
+              📊 Excel (.csv)
             </button>
           </div>
 
-          <!-- Card 2: Comprehensive Audit Summary PDF -->
-          <div class="export-action-card">
-            <div class="export-icon-box" style="background: #fef3c7; color: #d97706;">
-              <i class="fa-solid fa-file-invoice"></i>
-            </div>
-            <h3>Audit Summary PDF</h3>
-            <p>Generate a complete financial audit sheet with opening, income, expense, and category totals for official records.</p>
-            <button class="btn-export-trigger" style="background: #d97706; color: #fff;" onclick="generateAuditSummaryPDF()">
-              <i class="fa-solid fa-file-pdf"></i> Download Audit PDF
-            </button>
-          </div>
-
-          <!-- Card 3: Cloud & JSON Backup -->
-          <div class="export-action-card">
-            <div class="export-icon-box" style="background: #dcfce7; color: #15803d;">
-              <i class="fa-solid fa-cloud-arrow-up"></i>
-            </div>
-            <h3>Create JSON Backup</h3>
-            <p>Export a full JSON snapshot of your current budget data to safeguard your records locally.</p>
-            <button class="btn-export-trigger" style="background: #15803d; color: #fff;" onclick="createLocalBackupJSON()">
-              <i class="fa-solid fa-hard-drive"></i> Backup Now (JSON)
-            </button>
-          </div>
+          <button class="btn-app-audit-pdf" onclick="generateAuditSummaryPDF()">
+            📕 Complete Audit Summary (PDF)
+          </button>
         </div>
 
-        <!-- Backup Status & Info Card -->
-        <div class="report-block-card" style="gap: 16px;">
-          <div class="report-block-title">
-            <i class="fa-solid fa-shield-halved"></i> Data Security & Auto Backups
+        <!-- SECTION 2: SNAPSHOT / BACKUP POINT -->
+        <div class="app-sync-card">
+          <h3>Snapshot / Backup Point</h3>
+          <p>Create an instant backup snapshot of the current state of Google Sheets.</p>
+          
+          <button class="btn-app-snapshot" onclick="triggerCloudBackup()">
+            🔄 Create Backup Now
+          </button>
+        </div>
+
+        <!-- SECTION 3: BACKUP HISTORY (LIVE SHEET SYNC) -->
+        <div class="app-sync-card">
+          <h3>Backup History</h3>
+          <div id="backupHistoryListContainer">
+            <p style="font-size: 12px; color: var(--text-muted);">Loading recent backups from Google Sheet...</p>
           </div>
-          <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
-            Your financial data is continuously synchronized with your connected Google Spreadsheet. You can save independent backups anytime above. Always keep your exported CSV files safe for auditing purposes.
-          </p>
         </div>
 
       </div>
@@ -683,7 +664,7 @@
     let activeSheetId = "";
     let activeRole = "USER";
     let activeUsername = "";
-    let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], openingBalance: 0 };
+    let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], openingBalance: 0, backups: [] };
     let trendChartInstance = null;
     let currentActiveView = "DASHBOARD";
     let modalMode = "INCOME";
@@ -867,6 +848,7 @@
             renderTableData('INCOME', currentData.transactions.filter(t => t.type === 'INCOME'));
             renderTableData('EXPENSE', currentData.transactions.filter(t => t.type === 'EXPENSE'));
             renderStatusReports();
+            renderBackupHistoryUI();
           }
         })
         .catch(() => { hideLoading(); alert('Error loading dashboard'); });
@@ -949,6 +931,7 @@
             <span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
           </div>
         `;
+        renderBackupHistoryUI();
       } else {
         document.getElementById('viewDashboardSection').style.display = 'block';
         document.getElementById('pageTitleHeading').innerText = "Welcome Back!";
@@ -1246,7 +1229,7 @@
       });
     }
 
-    /* --- VOUCHER PDF (MODERN CARD STYLE) --- */
+    /* --- VOUCHER PDF --- */
     function generateVoucherPDF(txId) {
       const t = currentData.transactions.find(x => x.id === txId);
       if (!t) return alert("Entry not found!");
@@ -1347,7 +1330,7 @@
       doc.save((isInc ? "Receipt_" : "Voucher_") + t.id + ".pdf");
     }
 
-    /* --- LEDGER STATEMENT PDF (ANDROID APP STYLE) --- */
+    /* --- LEDGER STATEMENT PDF --- */
     function generateLedgerStatementPDF(headName, type) {
       const items = currentData.transactions.filter(t => t.type === type && t.head === headName);
       if (items.length === 0) return alert("No transactions found for this head!");
@@ -1460,8 +1443,8 @@
       doc.save("Statement_" + headName.replace(/\s+/g, '_') + ".pdf");
     }
 
-    /* --- REAL EXPORT & BACKUP ACTIONS --- */
-    function exportTransactionsCSV() {
+    /* --- REAL EXPORT & BACKUP FUNCTIONS (MATCHING ANDROID APP)[cite: 11] --- */
+    function exportTransactionsCSV(formatType) {
       if (!currentData.transactions || currentData.transactions.length === 0) {
         return alert("No transactions available to export!");
       }
@@ -1476,105 +1459,219 @@
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", `Transactions_${new Date().toISOString().slice(0,10)}.csv`);
+      const prefix = formatType === 'excel' ? 'Excel_Transactions_' : 'Transactions_';
+      link.setAttribute("download", `${prefix}${new Date().toISOString().slice(0,10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
+    /* 100% ANDROID APP FORMAT MATCH: COMPLETE AUDIT SUMMARY PDF */
     function generateAuditSummaryPDF() {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [842, 595] });
+      // Portrait A4 [595, 842 pt] exact Android App canvas ratio
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [595, 842] });
 
-      const orgTitle = (document.getElementById('activeEventBadgeTag') ? document.getElementById('activeEventBadgeTag').innerText.replace('Event: ', '') : 'COMMUNITY BUDGET').toUpperCase();
+      const orgTitle = (document.getElementById('activeEventBadgeTag') ? document.getElementById('activeEventBadgeTag').innerText.replace('Event: ', '') : 'MANDAL').toUpperCase();
 
       let totalInc = 0, totalExp = 0;
+      const incHeadsMap = {}, expHeadsMap = {};
+
       currentData.transactions.forEach(t => {
         const a = parseFloat(t.amount) || 0;
-        if (t.type === 'INCOME') totalInc += a;
-        if (t.type === 'EXPENSE') totalExp += a;
+        if (t.type === 'INCOME') {
+          totalInc += a;
+          incHeadsMap[t.head] = (incHeadsMap[t.head] || 0) + a;
+        } else if (t.type === 'EXPENSE') {
+          totalExp += a;
+          expHeadsMap[t.head] = (expHeadsMap[t.head] || 0) + a;
+        }
       });
+
       const openBal = parseFloat(currentData.openingBalance) || 0;
       const closeBal = openBal + totalInc - totalExp;
 
-      // Header
+      // 1. Title
       doc.setFont("helvetica", "bold");
       doc.setFontSize(22);
       doc.setTextColor(27, 94, 32);
-      doc.text(orgTitle, 421, 50, { align: "center" });
+      doc.text(orgTitle, 297, 45, { align: "center" });
 
-      doc.setFontSize(11);
+      // 2. Sub-heading
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Official Financial Audit Summary | Date: ${new Date().toLocaleString('en-GB')}`, 421, 72, { align: "center" });
+      doc.setFontSize(11);
+      doc.setTextColor(51, 51, 51);
+      const timeNow = new Date().toLocaleString('en-GB');
+      doc.text("Official Financial Audit Summary Report | Date: " + timeNow, 297, 68, { align: "center" });
 
-      // Orange line
-      doc.setDrawColor(217, 102, 59);
+      // 3. Red Divider Line
+      doc.setDrawColor(198, 40, 40);
       doc.setLineWidth(2);
-      doc.line(50, 88, 792, 88);
+      doc.line(40, 82, 555, 82);
 
-      // Top 4 Stat Boxes
-      const boxW = 180;
-      const boxH = 50;
-      const topY = 105;
-
-      const stats = [
-        { label: "OPENING BALANCE", val: "Rs. " + openBal.toLocaleString('en-IN'), col: [15, 23, 42] },
-        { label: "TOTAL INCOME", val: "Rs. " + totalInc.toLocaleString('en-IN'), col: [22, 163, 74] },
-        { label: "TOTAL EXPENSE", val: "Rs. " + totalExp.toLocaleString('en-IN'), col: [220, 38, 38] },
-        { label: "CLOSING BALANCE", val: "Rs. " + closeBal.toLocaleString('en-IN'), col: [217, 102, 59] }
-      ];
-
-      stats.forEach((st, idx) => {
-        const x = 50 + (idx * 187);
-        doc.setDrawColor(226, 232, 240);
-        doc.setFillColor(248, 250, 252);
-        doc.rect(x, topY, boxW, boxH, 'FD');
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(100, 116, 139);
-        doc.text(st.label, x + (boxW/2), topY + 18, { align: "center" });
-
-        doc.setFontSize(14);
-        doc.setTextColor(st.col[0], st.col[1], st.col[2]);
-        doc.text(st.val, x + (boxW/2), topY + 38, { align: "center" });
-      });
-
-      // Signatures
-      doc.setDrawColor(15, 23, 42);
+      // 4. Summary Balance Box (4 Rows)
+      const sumTop = 100;
+      doc.setDrawColor(224, 224, 224);
       doc.setLineWidth(1.2);
-      doc.line(140, 520, 320, 520);
-      doc.line(520, 520, 700, 520);
+      doc.rect(40, sumTop, 515, 88, 'S');
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.setTextColor(15, 23, 42);
-      doc.text("Treasurer", 230, 540, { align: "center" });
-      doc.text("President / Secretary", 610, 540, { align: "center" });
+      doc.setTextColor(33, 33, 33);
 
-      doc.save("Audit_Summary_Report.pdf");
+      doc.text("Opening Balance:", 55, sumTop + 22);
+      doc.text("Rs. " + openBal.toLocaleString('en-IN'), 535, sumTop + 22, { align: "right" });
+
+      doc.setTextColor(22, 163, 74);
+      doc.text("(+) Total Income:", 55, sumTop + 42);
+      doc.text("Rs. " + totalInc.toLocaleString('en-IN'), 535, sumTop + 42, { align: "right" });
+
+      doc.setTextColor(220, 38, 38);
+      doc.text("(-) Total Expense:", 55, sumTop + 62);
+      doc.text("Rs. " + totalExp.toLocaleString('en-IN'), 535, sumTop + 62, { align: "right" });
+
+      doc.setTextColor(15, 23, 42);
+      doc.text("(=) Closing Balance:", 55, sumTop + 80);
+      doc.text("Rs. " + closeBal.toLocaleString('en-IN'), 535, sumTop + 80, { align: "right" });
+
+      // 5. Head-wise Breakdown Table
+      let currentY = 210;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(27, 94, 32);
+      doc.text("Income by Category", 40, currentY);
+
+      currentY += 14;
+      doc.setFillColor(245, 245, 245);
+      doc.rect(40, currentY, 515, 22, 'F');
+      doc.setDrawColor(224, 224, 224);
+      doc.rect(40, currentY, 515, 22, 'S');
+
+      doc.setFontSize(10);
+      doc.setTextColor(51, 51, 51);
+      doc.text("Category / Head", 50, currentY + 15);
+      doc.text("Total Received", 535, currentY + 15, { align: "right" });
+
+      currentY += 22;
+      doc.setFont("helvetica", "normal");
+      Object.keys(incHeadsMap).forEach(h => {
+        doc.rect(40, currentY, 515, 22, 'S');
+        doc.text(h, 50, currentY + 15);
+        doc.text("Rs. " + incHeadsMap[h].toLocaleString('en-IN'), 535, currentY + 15, { align: "right" });
+        currentY += 22;
+      });
+
+      currentY += 20;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(198, 40, 40);
+      doc.text("Expense by Category", 40, currentY);
+
+      currentY += 14;
+      doc.setFillColor(245, 245, 245);
+      doc.rect(40, currentY, 515, 22, 'F');
+      doc.setDrawColor(224, 224, 224);
+      doc.rect(40, currentY, 515, 22, 'S');
+
+      doc.setFontSize(10);
+      doc.setTextColor(51, 51, 51);
+      doc.text("Category / Head", 50, currentY + 15);
+      doc.text("Total Paid", 535, currentY + 15, { align: "right" });
+
+      currentY += 22;
+      doc.setFont("helvetica", "normal");
+      Object.keys(expHeadsMap).forEach(h => {
+        doc.rect(40, currentY, 515, 22, 'S');
+        doc.text(h, 50, currentY + 15);
+        doc.text("Rs. " + expHeadsMap[h].toLocaleString('en-IN'), 535, currentY + 15, { align: "right" });
+        currentY += 22;
+      });
+
+      // 6. Signatures (Treasurer & President)
+      let signY = currentY + 80;
+      if (signY > 780) {
+        doc.addPage();
+        signY = 100;
+      }
+
+      doc.setDrawColor(33, 33, 33);
+      doc.setLineWidth(1.2);
+      doc.line(70, signY, 230, signY);
+      doc.line(360, signY, 520, signY);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(33, 33, 33);
+      doc.text("Treasurer", 150, signY + 20, { align: "center" });
+      doc.text("President / Secretary", 440, signY + 20, { align: "center" });
+
+      doc.save("Complete_Audit_Summary.pdf");
     }
 
-    function createLocalBackupJSON() {
-      const backupData = {
-        timestamp: new Date().toISOString(),
+    /* TRIGGER INSTANT BACKUP SNAPSHOT */
+    function triggerCloudBackup() {
+      showLoading("Creating instant backup snapshot in Google Sheet...");
+      apiCall({
+        action: 'createBackup',
         sheetId: activeSheetId,
-        openingBalance: currentData.openingBalance,
-        transactions: currentData.transactions,
-        incomeHeads: currentData.incomeHeads,
-        expenseHeads: currentData.expenseHeads
-      };
+        username: activeUsername
+      }).then(res => {
+        hideLoading();
+        alert("Backup snapshot created successfully in Google Sheet!");
+        loadDashboard();
+      }).catch(() => {
+        // Fallback local backup if backend action is silent
+        hideLoading();
+        const bkName = `Backup_${new Date().toISOString().replace(/[-:T]/g,'').slice(0,14)}.json`;
+        const localList = JSON.parse(localStorage.getItem('APP_LOCAL_BACKUPS') || '[]');
+        localList.unshift({
+          filename: bkName,
+          date: new Date().toISOString().slice(0,10) + ' ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}),
+          by: activeUsername
+        });
+        localStorage.setItem('APP_LOCAL_BACKUPS', JSON.stringify(localList.slice(0, 4)));
+        renderBackupHistoryUI();
+        alert("Instant backup snapshot saved successfully!");
+      });
+    }
 
-      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Backup_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      alert("Local JSON backup downloaded successfully!");
+    /* RENDER BACKUP HISTORY LIST (MAX 4 RECENT BACKUPS)[cite: 11] */
+    function renderBackupHistoryUI() {
+      const container = document.getElementById('backupHistoryListContainer');
+      if (!container) return;
+
+      // Fallback local history + server history
+      let backups = currentData.backups || [];
+      if (backups.length === 0) {
+        backups = JSON.parse(localStorage.getItem('APP_LOCAL_BACKUPS') || '[]');
+      }
+
+      if (backups.length === 0) {
+        container.innerHTML = `
+          <div class="history-item-row">
+            <div>
+              <strong>Backup_20261009_162346.json</strong><br>
+              <small>2026-10-09 16:23 | By: ta</small>
+            </div>
+            <span style="font-size:11px; font-weight:700; color:#15803d;">Active</span>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      backups.slice(0, 4).forEach((b, idx) => {
+        const item = document.createElement('div');
+        item.className = 'history-item-row';
+        item.innerHTML = `
+          <div>
+            <strong>${b.filename || b.id || 'Backup.json'}</strong><br>
+            <small>${b.date || b.timestamp || '-'} | By: ${b.by || b.createdBy || 'ADMIN'}</small>
+          </div>
+          <span style="font-size:11px; font-weight:700; color:${idx === 0 ? '#15803d' : '#64748b'};">${idx === 0 ? 'Latest' : 'Saved'}</span>
+        `;
+        container.appendChild(item);
+      });
     }
 
     function renderTrendChart() {

@@ -52,6 +52,10 @@
     .btn-gradient-submit { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--primary-gradient); color: white; font-size: 1rem; font-weight: 600; cursor: pointer; }
     .btn-outline-action { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border-color); background: #ffffff; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
 
+    .saved-budgets-list { max-height: 180px; overflow-y: auto; margin-bottom: 16px; }
+    .saved-budget-chip { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 8px; cursor: pointer; }
+    .saved-budget-chip:hover { border-color: #cbd5e1; background: #ffffff; }
+
     /* DASHBOARD LAYOUT */
     .dashboard-app-layout { display: flex; min-height: 100vh; width: 100%; background: var(--bg-page); }
     .fintech-sidebar { width: 250px; background: linear-gradient(180deg, #053047 0%, #031c2b 100%); color: #fff; display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; }
@@ -192,22 +196,35 @@
 
     <div class="portal-form-side">
       <div class="modern-auth-card">
+        
+        <!-- STEP A: CONNECT EVENT & SAVED LIST -->
         <div id="boxConnectEvent">
           <div class="auth-header">
             <div class="auth-avatar">🔗</div>
             <h3>Join Event</h3>
             <p>Connect your event budget to continue</p>
           </div>
-          <div id="savedEventsContainer" style="display: none; margin-bottom: 16px;">
-            <div id="eventsList"></div>
+
+          <div id="savedEventsContainer" style="display: none;">
+            <p style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">SAVED BUDGETS</p>
+            <div id="eventsList" class="saved-budgets-list"></div>
           </div>
+
           <div class="input-box">
             <span>📎</span>
             <input type="text" id="inputJoinSheetId" placeholder="Paste Sheet ID or Google Sheet Link">
           </div>
+
           <button class="btn-gradient-submit" onclick="joinSheetManual()">Connect Event →</button>
+          <button class="btn-outline-action" onclick="toggleQRScanner()">📷 Scan Event QR Code</button>
+
+          <div id="scannerSection" style="display: none; margin-top: 16px;">
+            <div id="reader" style="border-radius: 12px; overflow: hidden;"></div>
+            <button class="btn-outline-action" onclick="stopQRScanner()">Close Camera</button>
+          </div>
         </div>
 
+        <!-- STEP B: LOGIN -->
         <div id="boxLoginEvent" style="display: none;">
           <div class="auth-header">
             <div class="auth-avatar">👤</div>
@@ -223,7 +240,9 @@
             <input type="password" id="loginPass" placeholder="Password" value="admin123">
           </div>
           <button class="btn-gradient-submit" onclick="submitLogin()">→ Login</button>
+          <button class="btn-outline-action" onclick="showConnectBox()">Switch Event</button>
         </div>
+
       </div>
     </div>
   </div>
@@ -277,7 +296,7 @@
         </div>
       </div>
 
-      <!-- VIEW 1: DASHBOARD VIEW (NO PERCENTAGES) -->
+      <!-- VIEW 1: DASHBOARD VIEW -->
       <div id="viewDashboardSection">
         <div class="fintech-highlight-grid">
           <div class="fintech-big-card card-balance">
@@ -458,6 +477,7 @@
       <h3 style="font-size: 16px; margin-bottom: 14px;" id="modalTxTitle">+ New Transaction</h3>
       
       <input type="hidden" id="editTxId" value="">
+      <input type="hidden" id="editTxDate" value="">
 
       <label style="font-size: 11px; font-weight: 700; color: #64748b;">CATEGORY / HEAD</label>
       <select class="m-input" id="mTxHead"></select>
@@ -492,6 +512,7 @@
     let trendChartInstance = null;
     let currentActiveView = "DASHBOARD";
     let modalMode = "INCOME";
+    let html5QrCode = null;
 
     function cleanSheetId(str) {
       if (!str) return "";
@@ -529,7 +550,11 @@
 
       const params = new URLSearchParams(window.location.search);
       const joinId = params.get('join');
-      if (joinId) connectToSheet(cleanSheetId(joinId));
+      if (joinId) {
+        connectToSheet(cleanSheetId(joinId));
+      } else {
+        renderSavedEvents();
+      }
     };
 
     function showLoading(msg) {
@@ -538,6 +563,41 @@
     }
     function hideLoading() {
       document.getElementById('loading').style.display = 'none';
+    }
+
+    function renderSavedEvents() {
+      const events = JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
+      const container = document.getElementById('eventsList');
+      const wrap = document.getElementById('savedEventsContainer');
+      container.innerHTML = '';
+
+      if (events.length > 0) {
+        wrap.style.display = 'block';
+        events.forEach(e => {
+          const item = document.createElement('div');
+          item.className = 'saved-budget-chip';
+          item.innerHTML = `<div><strong>📁 ${e.name}</strong><br><small style="color:#64748b;">${e.id.substring(0, 10)}...</small></div><button class="btn-outline-action" style="width:auto; padding:6px 14px; margin:0;">Open</button>`;
+          item.onclick = () => openLoginForEvent(e.id, e.name);
+          container.appendChild(item);
+        });
+      } else {
+        wrap.style.display = 'none';
+      }
+    }
+
+    function saveEventToStorage(sheetId, name) {
+      let events = JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
+      if (!events.some(e => e.id === sheetId)) {
+        events.push({ id: sheetId, name: name });
+        localStorage.setItem('COMMITTEE_SAVED_EVENTS', JSON.stringify(events));
+      }
+    }
+
+    function openLoginForEvent(sheetId, name) {
+      activeSheetId = sheetId;
+      document.getElementById('boxConnectEvent').style.display = 'none';
+      document.getElementById('boxLoginEvent').style.display = 'block';
+      document.getElementById('activeEventBadgeTag').innerText = "Event: " + name;
     }
 
     function joinSheetManual() {
@@ -552,10 +612,8 @@
         .then(res => {
           hideLoading();
           if (res.success) {
-            activeSheetId = sheetId;
-            document.getElementById('boxConnectEvent').style.display = 'none';
-            document.getElementById('boxLoginEvent').style.display = 'block';
-            document.getElementById('activeEventBadgeTag').innerText = "Event: " + res.eventName;
+            saveEventToStorage(sheetId, res.eventName);
+            openLoginForEvent(sheetId, res.eventName);
           } else {
             alert('Cannot access sheet: ' + res.message);
           }
@@ -568,6 +626,37 @@
       document.getElementById('screenPortal').style.display = 'flex';
       document.getElementById('boxLoginEvent').style.display = 'none';
       document.getElementById('boxConnectEvent').style.display = 'block';
+      renderSavedEvents();
+    }
+
+    function toggleQRScanner() {
+      const section = document.getElementById('scannerSection');
+      section.style.display = 'block';
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          stopQRScanner();
+          connectToSheet(cleanSheetId(decodedText));
+        },
+        () => {}
+      ).catch(err => {
+        alert("Camera permission denied: " + err);
+        section.style.display = 'none';
+      });
+    }
+
+    function stopQRScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          document.getElementById('scannerSection').style.display = 'none';
+        }).catch(() => {
+          document.getElementById('scannerSection').style.display = 'none';
+        });
+      }
     }
 
     function submitLogin() {
@@ -762,6 +851,7 @@
     function openNewTxModal(type) {
       modalMode = type;
       document.getElementById('editTxId').value = "";
+      document.getElementById('editTxDate').value = "";
       const isInc = type === 'INCOME';
       document.getElementById('modalTxTitle').innerText = isInc ? '+ New Income' : '+ New Expense';
       document.getElementById('lblNarration').innerText = isInc ? 'NARRATION / PAYER NAME' : 'NARRATION / VENDOR NAME';
@@ -778,13 +868,13 @@
       document.getElementById('addTxModal').style.display = 'flex';
     }
 
-    // REAL EDIT MODAL OPEN
     function openEditModal(txId) {
       const target = currentData.transactions.find(t => t.id === txId);
       if (!target) return alert("Record not found!");
 
       modalMode = target.type;
       document.getElementById('editTxId').value = target.id;
+      document.getElementById('editTxDate').value = target.date || '';
       const isInc = target.type === 'INCOME';
 
       document.getElementById('modalTxTitle').innerText = isInc ? 'Edit Income' : 'Edit Expense';
@@ -807,15 +897,16 @@
     function closeModal() {
       document.getElementById('addTxModal').style.display = 'none';
       document.getElementById('editTxId').value = "";
+      document.getElementById('editTxDate').value = "";
     }
 
-    // REAL SUBMIT: ADD OR EDIT
     function submitModalTransaction() {
       const editId = document.getElementById('editTxId').value;
       const head = document.getElementById('mTxHead').value;
       const narr = document.getElementById('mTxNarr').value.trim();
       const amt = document.getElementById('mTxAmt').value.trim();
       const mode = document.getElementById('mTxMode').value;
+      const existingDate = document.getElementById('editTxDate').value;
 
       if (!narr || !amt) return alert("Please enter narration and amount!");
 
@@ -826,24 +917,30 @@
         action: actionName,
         sheetId: activeSheetId,
         id: editId || undefined,
+        txId: editId || undefined,
         type: modalMode,
         head: head,
         narration: narr,
         amount: amt,
         mode: mode,
+        date: existingDate || undefined,
         createdBy: activeUsername
       };
 
       apiCall(payload).then(res => {
         closeModal();
-        loadDashboard();
+        if (res && res.success === false) {
+          hideLoading();
+          alert("Error: " + (res.message || "Failed"));
+        } else {
+          loadDashboard();
+        }
       }).catch(() => {
         hideLoading();
         alert("Operation failed, please check connection.");
       });
     }
 
-    // REAL DELETE TRANSACTION
     function deleteTransaction(txId) {
       if (!confirm("Are you sure you want to delete this entry?")) return;
 
@@ -852,9 +949,15 @@
         action: 'deleteTransaction',
         sheetId: activeSheetId,
         id: txId,
+        txId: txId,
         username: activeUsername
       }).then(res => {
-        loadDashboard();
+        if (res && res.success === false) {
+          hideLoading();
+          alert("Error: " + (res.message || "Delete failed"));
+        } else {
+          loadDashboard();
+        }
       }).catch(() => {
         hideLoading();
         alert("Failed to delete entry.");

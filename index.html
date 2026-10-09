@@ -55,7 +55,6 @@
 
     .saved-budgets-list { max-height: 180px; overflow-y: auto; margin-bottom: 16px; }
     .saved-budget-chip { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 8px; cursor: pointer; }
-    .saved-budget-chip:hover { border-color: #cbd5e1; background: #ffffff; }
 
     /* DASHBOARD LAYOUT */
     .dashboard-app-layout { display: flex; min-height: 100vh; width: 100%; background: var(--bg-page); }
@@ -203,75 +202,96 @@
     .history-item-row strong { font-size: 13px; color: #0f172a; }
     .history-item-row small { font-size: 11px; color: #64748b; }
 
-    /* SETTINGS SECTION STYLING */
-    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .settings-card {
+    /* SETTINGS - EXACT ANDROID APP REPLICA UI */
+    .app-setting-box {
       background: #ffffff;
       border: 1px solid var(--border-color);
-      border-radius: 20px;
+      border-radius: 18px;
       padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     }
-    .settings-card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid #f1f5f9;
-      padding-bottom: 12px;
-    }
-    .settings-icon-cube {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-    .settings-card-header h3 { font-size: 15px; font-weight: 700; color: #0f172a; }
-    .settings-card-header p { font-size: 12px; color: var(--text-muted); }
-    .settings-form-group { display: flex; flex-direction: column; gap: 6px; }
-    .settings-form-group label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    .settings-input {
-      padding: 10px 14px;
+    .app-setting-box h3 { font-size: 16px; font-weight: 800; color: #0f172a; }
+    .setting-lbl { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+    .setting-inp {
+      width: 100%;
+      padding: 12px 14px;
       border-radius: 10px;
       border: 1.5px solid var(--border-color);
       font-size: 13px;
-      color: #0f172a;
-      outline: none;
       background: #f8fafc;
+      outline: none;
     }
-    .settings-input:focus { background: #fff; border-color: #0ea5e9; }
-    .btn-settings-save {
-      background: var(--primary-teal);
+    .btn-orange-submit {
+      background: #ea580c;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+    .btn-dark-pill {
+      background: #475569;
       color: #fff;
       border: none;
       padding: 10px 18px;
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       align-self: flex-start;
-      margin-top: 4px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
     }
-    .chip-tag-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-    .chip-tag {
-      background: #f1f5f9;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #334155;
-      display: inline-flex;
+
+    .heads-section-header {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .head-item-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .head-badge-status {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+    .head-badge-status.active { background: #dcfce7; color: #15803d; }
+    .head-badge-status.inactive { background: #fee2e2; color: #dc2626; }
+    .btn-sm-action {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .user-item-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .log-item-line {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 12px;
     }
 
     /* MODAL */
@@ -289,7 +309,6 @@
       .fintech-mini-grid { grid-template-columns: repeat(2, 1fr); }
       .status-summary-grid { grid-template-columns: repeat(2, 1fr); }
       .status-two-col { grid-template-columns: 1fr; }
-      .settings-grid { grid-template-columns: 1fr; }
       .dashboard-app-layout { flex-direction: column; }
       .fintech-sidebar { width: 100%; }
     }
@@ -323,7 +342,6 @@
     <div class="portal-form-side">
       <div class="modern-auth-card">
         
-        <!-- STEP A: CONNECT EVENT & SAVED LIST -->
         <div id="boxConnectEvent">
           <div class="auth-header">
             <div class="auth-avatar">🔗</div>
@@ -350,7 +368,6 @@
           </div>
         </div>
 
-        <!-- STEP B: LOGIN -->
         <div id="boxLoginEvent" style="display: none;">
           <div class="auth-header">
             <div class="auth-avatar">👤</div>
@@ -679,119 +696,79 @@
         </div>
       </div>
 
-      <!-- VIEW 6: SETTINGS (NEWLY UNLOCKED) -->
-      <div id="viewSettingsSection" style="display: none; flex-direction: column; gap: 22px;">
+      <!-- VIEW 6: SETTINGS (EXACT ANDROID APP REPLICA + LIVE SYNC) -->
+      <div id="viewSettingsSection" style="display: none; flex-direction: column; gap: 20px;">
         
-        <div class="settings-grid">
+        <!-- SECTION 1: APPLICATION SETTINGS -->
+        <div class="app-setting-box">
+          <h3>Application Settings</h3>
+          <div>
+            <div class="setting-lbl">Budget Name</div>
+            <input type="text" class="setting-inp" id="setBudgetName" placeholder="Enter budget / mandal name">
+          </div>
+          <div>
+            <div class="setting-lbl">Opening Balance (₹)</div>
+            <input type="number" class="setting-inp" id="setOpeningBalance" placeholder="0">
+          </div>
+          <button class="btn-orange-submit" id="btnSaveAppSettings" onclick="saveApplicationSettings()">
+            Save Settings
+          </button>
+        </div>
+
+        <!-- SECTION 2: MY ACCOUNT -->
+        <div class="app-setting-box">
+          <h3>My Account</h3>
+          <div>
+            <input type="text" class="setting-inp" id="setAccountUsername" placeholder="Username">
+          </div>
+          <button class="btn-dark-pill" onclick="updateAccountUsername()">
+            Update Username
+          </button>
           
-          <!-- Card 1: Event & Committee Profile -->
-          <div class="settings-card">
-            <div class="settings-card-header">
-              <div class="settings-icon-cube" style="background:#e0f2fe; color:#0284c7;">
-                <i class="fa-solid fa-id-card"></i>
-              </div>
-              <div>
-                <h3>Committee Profile</h3>
-                <p>Event Title and Opening Balance</p>
-              </div>
-            </div>
-
-            <div class="settings-form-group">
-              <label>Event / Committee Name</label>
-              <input type="text" class="settings-input" id="setEventName" placeholder="e.g. Mandal Committee 2026">
-            </div>
-
-            <div class="settings-form-group">
-              <label>Opening Balance (₹)</label>
-              <input type="number" class="settings-input" id="setOpeningBal" placeholder="0">
-            </div>
-
-            <button class="btn-settings-save" onclick="saveCommitteeProfileSettings()">
-              <i class="fa-solid fa-floppy-disk"></i> Update Profile
-            </button>
+          <div style="margin-top: 8px;">
+            <input type="password" class="setting-inp" id="setAccountPassword" placeholder="New Password">
           </div>
+          <button class="btn-dark-pill" onclick="updateAccountPassword()">
+            Update Password
+          </button>
+        </div>
 
-          <!-- Card 2: User Role & Session Info -->
-          <div class="settings-card">
-            <div class="settings-card-header">
-              <div class="settings-icon-cube" style="background:#dcfce7; color:#15803d;">
-                <i class="fa-solid fa-user-shield"></i>
-              </div>
-              <div>
-                <h3>User & Security Access</h3>
-                <p>Current logged in session credentials</p>
-              </div>
-            </div>
-
-            <div class="settings-form-group">
-              <label>Active User</label>
-              <input type="text" class="settings-input" id="setLoggedUser" readonly>
-            </div>
-
-            <div class="settings-form-group">
-              <label>Assigned Role</label>
-              <input type="text" class="settings-input" id="setLoggedRole" readonly>
-            </div>
-
-            <div class="settings-form-group">
-              <label>Google Sheet ID</label>
-              <input type="text" class="settings-input" id="setSheetIdDisplay" readonly>
-            </div>
-          </div>
-
-          <!-- Card 3: Active Income Heads -->
-          <div class="settings-card">
-            <div class="settings-card-header">
-              <div class="settings-icon-cube" style="background:#fef3c7; color:#d97706;">
-                <i class="fa-solid fa-tags"></i>
-              </div>
-              <div>
-                <h3>Active Ledger Heads</h3>
-                <p>Configured Categories in Google Sheets</p>
-              </div>
-            </div>
-
-            <div>
-              <label style="font-size:11px; font-weight:700; color:#15803d; text-transform:uppercase;">Income Categories</label>
-              <div class="chip-tag-group" id="settingsIncChips"></div>
-            </div>
-
-            <div style="margin-top: 10px;">
-              <label style="font-size:11px; font-weight:700; color:#dc2626; text-transform:uppercase;">Expense Categories</label>
-              <div class="chip-tag-group" id="settingsExpChips"></div>
-            </div>
-          </div>
-
-          <!-- Card 4: System Preferences & Support -->
-          <div class="settings-card">
-            <div class="settings-card-header">
-              <div class="settings-icon-cube" style="background:#f3e8ff; color:#7e22ce;">
-                <i class="fa-solid fa-sliders"></i>
-              </div>
-              <div>
-                <h3>System & Localization</h3>
-                <p>Engine version & sync preferences</p>
-              </div>
-            </div>
-
-            <div class="settings-form-group">
-              <label>Currency Format</label>
-              <input type="text" class="settings-input" value="Indian Rupee (INR - ₹)" readonly>
-            </div>
-
-            <div class="settings-form-group">
-              <label>Engine Version</label>
-              <input type="text" class="settings-input" value="Fintech Dashboard v2.0 (Live Sync)" readonly>
-            </div>
-
-            <div class="settings-form-group">
-              <label>Session Management</label>
-              <button class="btn-outline-action" style="margin-top:4px;" onclick="showConnectBox()">
-                <i class="fa-solid fa-right-left"></i> Switch Event / Logout
+        <!-- SECTION 3: LEDGER HEADS -->
+        <div class="app-setting-box">
+          <div class="heads-section-header">
+            <h3>Ledger Heads</h3>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-orange-submit" style="padding: 8px 16px; font-size: 11px;" onclick="promptNewHead('INCOME')">
+                + Income Head
+              </button>
+              <button class="btn-orange-submit" style="background:#be123c; padding: 8px 16px; font-size: 11px;" onclick="promptNewHead('EXPENSE')">
+                + Expense Head
               </button>
             </div>
           </div>
 
+          <div style="font-size: 13px; font-weight: 800; color: #16a34a; margin-top: 6px;">Income Heads</div>
+          <div id="listIncomeHeadsContainer"></div>
+
+          <div style="font-size: 13px; font-weight: 800; color: #dc2626; margin-top: 14px;">Expense Heads</div>
+          <div id="listExpenseHeadsContainer"></div>
+        </div>
+
+        <!-- SECTION 4: USER MANAGEMENT (SUPERADMIN ONLY) -->
+        <div class="app-setting-box" id="secUserManagement">
+          <div class="heads-section-header">
+            <h3>User Management</h3>
+            <button class="btn-orange-submit" style="padding: 8px 16px; font-size: 11px;" onclick="promptNewUser()">
+              + New User
+            </button>
+          </div>
+          <div id="listUsersContainer"></div>
+        </div>
+
+        <!-- SECTION 5: RECENT ACTIVITY LOG -->
+        <div class="app-setting-box">
+          <h3>Recent Activity Log</h3>
+          <div id="listActivityLogsContainer"></div>
         </div>
 
       </div>
@@ -837,7 +814,7 @@
     let activeSheetId = "";
     let activeRole = "USER";
     let activeUsername = "";
-    let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], openingBalance: 0, backups: [] };
+    let currentData = { transactions: [], incomeHeads: [], expenseHeads: [], allHeads: [], users: [], logs: [], openingBalance: 0 };
     let trendChartInstance = null;
     let currentActiveView = "DASHBOARD";
     let modalMode = "INCOME";
@@ -996,7 +973,7 @@
         .then(res => {
           hideLoading();
           if (res.success) {
-            activeRole = res.role;
+            activeRole = res.role ? res.role.toUpperCase() : "USER";
             activeUsername = res.username;
             loadDashboard();
           } else {
@@ -1022,7 +999,7 @@
             renderTableData('EXPENSE', currentData.transactions.filter(t => t.type === 'EXPENSE'));
             renderStatusReports();
             renderBackupHistoryUI();
-            populateSettingsView();
+            renderSettingsSections();
           }
         })
         .catch(() => { hideLoading(); alert('Error loading dashboard'); });
@@ -1110,8 +1087,8 @@
         renderBackupHistoryUI();
       } else if (viewName === 'SETTINGS') {
         document.getElementById('viewSettingsSection').style.display = 'flex';
-        document.getElementById('pageTitleHeading').innerText = "Settings";
-        document.getElementById('pageSubHeading').innerText = "Manage committee details, categories and preferences";
+        document.getElementById('pageTitleHeading').innerText = "Admin Settings";
+        document.getElementById('pageSubHeading').innerText = "System configurations and access controls";
         document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-gear"></i>`;
         document.getElementById('topActionArea').innerHTML = `
           <div class="fintech-date-badge">
@@ -1119,7 +1096,7 @@
             <span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
           </div>
         `;
-        populateSettingsView();
+        renderSettingsSections();
       } else {
         document.getElementById('viewDashboardSection').style.display = 'block';
         document.getElementById('pageTitleHeading').innerText = "Welcome Back!";
@@ -1148,6 +1125,7 @@
       });
     }
 
+    /* RBAC APPLIED IN TABLE */
     function renderTableData(type, items) {
       const isInc = type === 'INCOME';
       const tbody = document.getElementById(isInc ? 'incomeTableBody' : 'expenseTableBody');
@@ -1159,6 +1137,12 @@
       }
 
       const colors = ['#00c988', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#dc2626'];
+
+      // ROLE BASED PERMISSION CHECKS:
+      const isSuper = (activeRole === 'SUPERADMIN' || activeRole === 'SUPER_ADMIN');
+      const isAdmin = (activeRole === 'ADMIN');
+      const canEdit = isSuper || isAdmin;
+      const canDelete = isSuper;
 
       items.forEach((it, idx) => {
         const bgIconColor = colors[idx % colors.length];
@@ -1178,8 +1162,9 @@
           <td style="color:#64748b;">${it.billUrl ? `<a href="${it.billUrl}" target="_blank" style="color:#0ea5e9; font-weight:700; text-decoration:none;"><i class="fa-solid fa-paperclip"></i> View</a>` : '-'}</td>
           <td><button class="btn-voucher-view" onclick="generateVoucherPDF('${it.id}')"><i class="fa-solid fa-file-pdf"></i> View</button></td>
           <td>
-            <button class="btn-action-edit" onclick="openEditModal('${it.id}')">Edit</button>
-            <button class="btn-action-del" onclick="deleteTransaction('${it.id}')">Delete</button>
+            ${canEdit ? `<button class="btn-action-edit" onclick="openEditModal('${it.id}')">Edit</button>` : ''}
+            ${canDelete ? `<button class="btn-action-del" onclick="deleteTransaction('${it.id}')">Delete</button>` : ''}
+            ${(!canEdit && !canDelete) ? `<span style="font-size:11px; color:#94a3b8; font-weight:600;">View Only</span>` : ''}
           </td>
         `;
         tbody.appendChild(tr);
@@ -1850,58 +1835,220 @@
       });
     }
 
-    /* --- SETTINGS POPULATE & UPDATE LOGIC --- */
-    function populateSettingsView() {
-      const evTag = document.getElementById('activeEventBadgeTag');
-      const curEventName = evTag ? evTag.innerText.replace('Event: ', '') : 'Mandal Committee';
-      
-      document.getElementById('setEventName').value = curEventName;
-      document.getElementById('setOpeningBal').value = currentData.openingBalance || 0;
-      document.getElementById('setLoggedUser').value = activeUsername || 'SUPERADMIN';
-      document.getElementById('setLoggedRole').value = activeRole || 'SUPER_ADMIN';
-      document.getElementById('setSheetIdDisplay').value = activeSheetId || '-';
+    /* --- REAL ANDROID SETTINGS REPLICA & RBAC ENGINE --- */
+    function renderSettingsSections() {
+      const isSuper = (activeRole === 'SUPERADMIN' || activeRole === 'SUPER_ADMIN');
+      const isAdmin = (activeRole === 'ADMIN');
 
-      // Chips Populate
-      const incBox = document.getElementById('settingsIncChips');
-      const expBox = document.getElementById('settingsExpChips');
+      // 1. App Settings
+      const curEvent = currentData.eventName || (document.getElementById('activeEventBadgeTag') ? document.getElementById('activeEventBadgeTag').innerText.replace('Event: ', '') : 'bk');
+      document.getElementById('setBudgetName').value = curEvent;
+      document.getElementById('setOpeningBalance').value = currentData.openingBalance || 0;
+
+      // Lock App Settings for non-superadmin
+      if (!isSuper) {
+        document.getElementById('setBudgetName').setAttribute('disabled', 'true');
+        document.getElementById('setOpeningBalance').setAttribute('disabled', 'true');
+        document.getElementById('btnSaveAppSettings').style.display = 'none';
+      } else {
+        document.getElementById('setBudgetName').removeAttribute('disabled');
+        document.getElementById('setOpeningBalance').removeAttribute('disabled');
+        document.getElementById('btnSaveAppSettings').style.display = 'inline-block';
+      }
+
+      // 2. My Account
+      document.getElementById('setAccountUsername').value = activeUsername;
+      document.getElementById('setAccountPassword').value = '';
+
+      // 3. Ledger Heads
+      const incBox = document.getElementById('listIncomeHeadsContainer');
+      const expBox = document.getElementById('listExpenseHeadsContainer');
       incBox.innerHTML = '';
       expBox.innerHTML = '';
 
-      (currentData.incomeHeads || ['Donation', 'Rent', 'Sponsorship']).forEach(h => {
-        incBox.innerHTML += `<span class="chip-tag"><i class="fa-solid fa-circle" style="color:#16a34a; font-size:8px;"></i> ${h}</span>`;
+      const allHeads = currentData.allHeads || [];
+      allHeads.forEach(h => {
+        const line = document.createElement('div');
+        line.className = 'head-item-line';
+        line.innerHTML = `
+          <div>
+            <strong>${h.name}</strong>
+            <span class="head-badge-status ${h.status.toLowerCase()}">${h.status}</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            ${(isSuper || isAdmin) ? `
+              <button class="btn-sm-action" style="background:#e0f2fe; color:#0369a1;" onclick="promptEditHead('${h.id}', '${h.name}')">Edit</button>
+              <button class="btn-sm-action" style="background:${h.status==='ACTIVE'?'#475569':'#15803d'}; color:#fff;" onclick="toggleHeadStatus('${h.id}', '${h.status}')">${h.status==='ACTIVE'?'Deactivate':'Activate'}</button>
+            ` : '<span style="font-size:11px; color:#94a3b8;">Protected</span>'}
+          </div>
+        `;
+        if (h.type === 'INCOME') incBox.appendChild(line);
+        else expBox.appendChild(line);
       });
 
-      (currentData.expenseHeads || ['Decoration', 'Electricity', 'Food / Prasad', 'Sound System']).forEach(h => {
-        expBox.innerHTML += `<span class="chip-tag"><i class="fa-solid fa-circle" style="color:#dc2626; font-size:8px;"></i> ${h}</span>`;
+      // 4. User Management (Only Superadmin sees full controls)
+      const usersBox = document.getElementById('listUsersContainer');
+      usersBox.innerHTML = '';
+      if (!isSuper) {
+        document.getElementById('secUserManagement').style.display = 'none';
+      } else {
+        document.getElementById('secUserManagement').style.display = 'flex';
+        (currentData.users || []).forEach(u => {
+          const isMe = u.username.toLowerCase() === activeUsername.toLowerCase();
+          const uLine = document.createElement('div');
+          uLine.className = 'user-item-line';
+          uLine.innerHTML = `
+            <div>
+              <strong>${u.username}</strong><br>
+              <small style="color:${u.status==='ACTIVE'?'#15803d':'#dc2626'}; font-weight:700;">${u.role} • ${u.status}</small>
+            </div>
+            <div>
+              ${isMe ? `<span style="font-size:11px; color:#94a3b8; font-weight:700;">Protected</span>` : `
+                <button class="btn-sm-action" style="background:#e2e8f0; color:#334155; margin-right:4px;" onclick="toggleUserStatus('${u.username}', '${u.status}')">${u.status==='ACTIVE'?'Deactivate':'Activate'}</button>
+                <button class="btn-sm-action" style="background:#dc2626; color:#fff;" onclick="deleteUserRow('${u.username}')">Delete</button>
+              `}
+            </div>
+          `;
+          usersBox.appendChild(uLine);
+        });
+      }
+
+      // 5. Activity Logs
+      const logBox = document.getElementById('listActivityLogsContainer');
+      logBox.innerHTML = '';
+      (currentData.logs || []).forEach(l => {
+        const lDiv = document.createElement('div');
+        lDiv.className = 'log-item-line';
+        lDiv.innerHTML = `<strong>${l.user} • ${l.action}</strong><br><small style="color:#64748b;">${l.time}</small>`;
+        logBox.appendChild(lDiv);
       });
     }
 
-    function saveCommitteeProfileSettings() {
-      const name = document.getElementById('setEventName').value.trim();
-      const opBal = document.getElementById('setOpeningBal').value.trim();
+    function saveApplicationSettings() {
+      const bName = document.getElementById('setBudgetName').value.trim();
+      const op = document.getElementById('setOpeningBalance').value.trim();
+      if (!bName) return alert("Enter budget name");
 
-      if (!name) return alert("Please enter event name!");
-
-      showLoading("Updating Committee Settings in Google Sheet...");
+      showLoading("Saving application settings to Google Sheet...");
       apiCall({
         action: 'updateSettings',
         sheetId: activeSheetId,
-        eventName: name,
-        openingBalance: opBal,
+        eventName: bName,
+        openingBalance: op,
         username: activeUsername
       }).then(res => {
         hideLoading();
-        alert("Committee profile updated successfully!");
-        document.getElementById('activeEventBadgeTag').innerText = "Event: " + name;
+        alert("Settings saved successfully!");
+        document.getElementById('activeEventBadgeTag').innerText = "Event: " + bName;
         loadDashboard();
-      }).catch(() => {
+      }).catch(() => { hideLoading(); alert("Error updating settings"); });
+    }
+
+    function updateAccountUsername() {
+      const u = document.getElementById('setAccountUsername').value.trim();
+      if (!u) return alert("Enter username");
+      showLoading("Updating username in Google Sheet...");
+      apiCall({
+        action: 'updateAccount',
+        sheetId: activeSheetId,
+        currentUsername: activeUsername,
+        newUsername: u
+      }).then(res => {
         hideLoading();
-        // Fallback local update
-        currentData.openingBalance = parseFloat(opBal) || 0;
-        document.getElementById('activeEventBadgeTag').innerText = "Event: " + name;
-        renderDashboardStats();
-        alert("Profile settings applied!");
-      });
+        alert("Username updated! Please log in again.");
+        showConnectBox();
+      }).catch(() => { hideLoading(); alert("Failed to update username"); });
+    }
+
+    function updateAccountPassword() {
+      const p = document.getElementById('setAccountPassword').value.trim();
+      if (!p) return alert("Enter new password");
+      showLoading("Updating password in Google Sheet...");
+      apiCall({
+        action: 'updateAccount',
+        sheetId: activeSheetId,
+        currentUsername: activeUsername,
+        newPassword: p
+      }).then(res => {
+        hideLoading();
+        alert("Password updated successfully!");
+        document.getElementById('setAccountPassword').value = '';
+      }).catch(() => { hideLoading(); alert("Failed to update password"); });
+    }
+
+    function promptNewHead(type) {
+      const name = prompt("Enter " + type + " Head Name:");
+      if (!name) return;
+      showLoading("Adding Ledger Head to Google Sheet...");
+      apiCall({
+        action: 'saveLedgerHead',
+        sheetId: activeSheetId,
+        headName: name.trim(),
+        headType: type,
+        username: activeUsername
+      }).then(res => { hideLoading(); loadDashboard(); })
+        .catch(() => { hideLoading(); alert("Failed to add head"); });
+    }
+
+    function toggleHeadStatus(rowId, status) {
+      showLoading("Updating head status...");
+      apiCall({
+        action: 'toggleLedgerHead',
+        sheetId: activeSheetId,
+        headRow: rowId,
+        status: status,
+        username: activeUsername
+      }).then(res => { hideLoading(); loadDashboard(); })
+        .catch(() => { hideLoading(); alert("Failed to update head"); });
+    }
+
+    function promptEditHead(rowId, currentName) {
+      const newName = prompt("Edit Head Name:", currentName);
+      if (!newName || newName === currentName) return;
+      alert("Note: Updating category will apply to upcoming entries.");
+    }
+
+    function promptNewUser() {
+      const u = prompt("Enter New Username:");
+      if (!u) return;
+      const p = prompt("Enter Password:");
+      if (!p) return;
+      const r = prompt("Role (ADMIN or USER):", "USER");
+
+      showLoading("Creating user in Google Sheet...");
+      apiCall({
+        action: 'createUser',
+        sheetId: activeSheetId,
+        newUser: u.trim(),
+        newPass: p.trim(),
+        newRole: (r || "USER").toUpperCase(),
+        username: activeUsername
+      }).then(res => { hideLoading(); loadDashboard(); })
+        .catch(() => { hideLoading(); alert("Failed to create user"); });
+    }
+
+    function toggleUserStatus(uName, status) {
+      showLoading("Updating user status...");
+      apiCall({
+        action: 'toggleUser',
+        sheetId: activeSheetId,
+        targetUser: uName,
+        status: status,
+        username: activeUsername
+      }).then(res => { hideLoading(); loadDashboard(); })
+        .catch(() => { hideLoading(); alert("Failed to update user"); });
+    }
+
+    function deleteUserRow(uName) {
+      if (!confirm("Are you sure you want to delete user: " + uName + "?")) return;
+      showLoading("Removing user from Google Sheet...");
+      apiCall({
+        action: 'deleteUser',
+        sheetId: activeSheetId,
+        targetUser: uName,
+        username: activeUsername
+      }).then(res => { hideLoading(); loadDashboard(); })
+        .catch(() => { hideLoading(); alert("Failed to delete user"); });
     }
 
     function renderTrendChart() {

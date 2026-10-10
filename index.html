@@ -202,7 +202,7 @@
     .history-item-row strong { font-size: 13px; color: #0f172a; }
     .history-item-row small { font-size: 11px; color: #64748b; }
 
-    /* SETTINGS - EXACT ANDROID APP REPLICA */
+    /* SETTINGS */
     .app-setting-box {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -700,7 +700,7 @@
         </div>
       </div>
 
-      <!-- VIEW 6: SETTINGS (EXACT ANDROID APP REPLICA + STRICT RBAC) -->
+      <!-- VIEW 6: SETTINGS -->
       <div id="viewSettingsSection" style="display: none; flex-direction: column; gap: 20px;">
         
         <!-- SECTION 1: APPLICATION SETTINGS -->
@@ -824,7 +824,35 @@
     let modalMode = "INCOME";
     let html5QrCode = null;
 
-    // Safe Storage helper for iPhone Safari private mode
+    // Helper: Normalize Date to Local YYYY-MM-DD
+    function getLocalDateString(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function normalizeDateString(dateVal) {
+      if (!dateVal) return "";
+      const str = dateVal.toString().trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+        return str.slice(0, 10);
+      }
+      const parts = str.split(/[-/]/);
+      if (parts.length === 3) {
+        if (parts[0].length === 2 && parts[2].length === 4) {
+          // DD-MM-YYYY or DD/MM/YYYY
+          return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+      }
+      const parsed = new Date(str);
+      if (!isNaN(parsed.getTime())) {
+        return getLocalDateString(parsed);
+      }
+      return str.slice(0, 10);
+    }
+
+    // Safe Storage helper
     function getStoredEvents() {
       try {
         return JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
@@ -1053,16 +1081,17 @@
     function renderDashboardStats() {
       let todayInc = 0, todayExp = 0;
       let totalInc = 0, totalExp = 0;
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayStr = getLocalDateString(new Date());
 
       currentData.transactions.forEach(t => {
         const amt = parseFloat(t.amount) || 0;
+        const normDate = normalizeDateString(t.date);
         if (t.type === 'INCOME') {
           totalInc += amt;
-          if (t.date && t.date.includes(todayStr)) todayInc += amt;
+          if (normDate === todayStr) todayInc += amt;
         } else if (t.type === 'EXPENSE') {
           totalExp += amt;
-          if (t.date && t.date.includes(todayStr)) todayExp += amt;
+          if (normDate === todayStr) todayExp += amt;
         }
       });
 
@@ -1147,6 +1176,13 @@
         document.getElementById('topActionArea').innerHTML = `
           <div class="fintech-date-badge"><i class="fa-regular fa-calendar"></i><span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
         `;
+        setTimeout(() => {
+          if (trendChartInstance) {
+            trendChartInstance.resize();
+          } else {
+            renderTrendChart();
+          }
+        }, 50);
       }
     }
 
@@ -1164,7 +1200,7 @@
       });
     }
 
-    /* STRICT ROLE BASED ACCESS IN TABLES */
+    /* TABLES */
     function renderTableData(type, items) {
       const isInc = type === 'INCOME';
       const tbody = document.getElementById(isInc ? 'incomeTableBody' : 'expenseTableBody');
@@ -1177,7 +1213,6 @@
 
       const colors = ['#00c988', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#dc2626'];
 
-      // ROLE BASED RULES:
       const isSuper = (activeRole === 'SUPERADMIN' || activeRole === 'SUPER_ADMIN');
       const isAdmin = (activeRole === 'ADMIN');
       const canEdit = isSuper || isAdmin;
@@ -1221,14 +1256,14 @@
 
       let filtered = currentData.transactions.filter(t => t.type === type);
 
-      if (from) filtered = filtered.filter(t => t.date >= from);
-      if (to) filtered = filtered.filter(t => t.date <= to);
+      if (from) filtered = filtered.filter(t => normalizeDateString(t.date) >= from);
+      if (to) filtered = filtered.filter(t => normalizeDateString(t.date) <= to);
       if (head) filtered = filtered.filter(t => t.head === head);
       if (mode) filtered = filtered.filter(t => t.mode === mode);
       if (search) filtered = filtered.filter(t => (t.narration || '').toLowerCase().includes(search) || (t.head || '').toLowerCase().includes(search));
 
-      if (sort === 'NEWEST') filtered.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
-      if (sort === 'OLDEST') filtered.sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+      if (sort === 'NEWEST') filtered.sort((a,b) => normalizeDateString(b.date).localeCompare(normalizeDateString(a.date)));
+      if (sort === 'OLDEST') filtered.sort((a,b) => normalizeDateString(a.date).localeCompare(normalizeDateString(b.date)));
       if (sort === 'HIGH') filtered.sort((a,b) => parseFloat(b.amount || 0) - parseFloat(a.amount || 0));
       if (sort === 'LOW') filtered.sort((a,b) => parseFloat(a.amount || 0) - parseFloat(b.amount || 0));
 
@@ -1310,7 +1345,7 @@
       
       let txnDate = document.getElementById('editTxDate').value;
       if (!txnDate || txnDate === "undefined" || txnDate === "") {
-        txnDate = new Date().toISOString().slice(0, 10);
+        txnDate = getLocalDateString(new Date());
       }
 
       if (!narr || !amt) return alert("Please enter narration and amount!");
@@ -1663,7 +1698,7 @@
       doc.save("Statement_" + headName.replace(/\s+/g, '_') + ".pdf");
     }
 
-    /* --- REAL EXPORT & BACKUP FUNCTIONS --- */
+    /* --- EXPORT CSV & PDF --- */
     function exportTransactionsCSV(formatType) {
       if (!currentData.transactions || currentData.transactions.length === 0) {
         return alert("No transactions available to export!");
@@ -1882,18 +1917,16 @@
       });
     }
 
-    /* --- REAL SETTINGS RENDERING & USER RBAC LOCK --- */
+    /* SETTINGS */
     function renderSettingsSections() {
       const isSuper = (activeRole === 'SUPERADMIN' || activeRole === 'SUPER_ADMIN');
       const isAdmin = (activeRole === 'ADMIN');
       const isUser = (activeRole === 'USER');
 
-      // 1. App Settings
       const curEvent = currentData.eventName || (document.getElementById('activeEventBadgeTag') ? document.getElementById('activeEventBadgeTag').innerText.replace('Event: ', '') : 'bk');
       document.getElementById('setBudgetName').value = curEvent;
       document.getElementById('setOpeningBalance').value = currentData.openingBalance || 0;
 
-      // Lock Settings for non-superadmin
       if (!isSuper) {
         document.getElementById('setBudgetName').setAttribute('disabled', 'true');
         document.getElementById('setOpeningBalance').setAttribute('disabled', 'true');
@@ -1904,7 +1937,6 @@
         document.getElementById('btnSaveAppSettings').style.display = 'inline-block';
       }
 
-      // 2. My Account (USER Cannot update username or password)
       document.getElementById('setAccountUsername').value = activeUsername;
       document.getElementById('setAccountPassword').value = '';
       if (isUser) {
@@ -1919,7 +1951,6 @@
         document.getElementById('btnUpdatePassword').style.display = 'inline-block';
       }
 
-      // 3. Ledger Heads
       const incBox = document.getElementById('listIncomeHeadsContainer');
       const expBox = document.getElementById('listExpenseHeadsContainer');
       incBox.innerHTML = '';
@@ -1951,7 +1982,6 @@
         else expBox.appendChild(line);
       });
 
-      // 4. User Management (Only Superadmin sees full controls)
       const usersBox = document.getElementById('listUsersContainer');
       usersBox.innerHTML = '';
       if (!isSuper) {
@@ -1978,7 +2008,6 @@
         });
       }
 
-      // 5. Activity Logs
       const logBox = document.getElementById('listActivityLogsContainer');
       logBox.innerHTML = '';
       (currentData.logs || []).forEach(l => {
@@ -2165,11 +2194,12 @@
 
     function renderTrendChart() {
       const dateMap = {};
-      const sorted = [...currentData.transactions].sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+      const sorted = [...currentData.transactions].sort((a,b) => normalizeDateString(a.date).localeCompare(normalizeDateString(b.date)));
 
       let runningBal = parseFloat(currentData.openingBalance) || 0;
       sorted.forEach(t => {
-        const d = (t.date || '').slice(5);
+        const norm = normalizeDateString(t.date);
+        const d = norm.length >= 10 ? norm.slice(5) : (norm || 'Day');
         const amt = parseFloat(t.amount) || 0;
         if (t.type === 'INCOME') runningBal += amt;
         if (t.type === 'EXPENSE') runningBal -= amt;
@@ -2178,9 +2208,14 @@
 
       let labels = Object.keys(dateMap);
       let dataPoints = Object.values(dateMap);
-      if (labels.length === 0) { labels = ['Day 1', 'Day 2']; dataPoints = [0, runningBal]; }
+      if (labels.length === 0) {
+        labels = ['Start', 'Today'];
+        dataPoints = [runningBal, runningBal];
+      }
 
-      const ctx = document.getElementById('balanceTrendChart').getContext('2d');
+      const canvas = document.getElementById('balanceTrendChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
       if (trendChartInstance) trendChartInstance.destroy();
 
       const gradient = ctx.createLinearGradient(0, 0, 0, 260);

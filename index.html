@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Committee & Event Budget Tracker</title>
   <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   
@@ -31,8 +31,8 @@
       --expense: #dc2626;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg-page); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background-color: var(--bg-page); color: var(--text-main); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
     /* PORTAL UI */
     .portal-wrapper { min-height: 100vh; display: flex; flex-direction: row; background: #ffffff; }
@@ -305,12 +305,16 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     @media (max-width: 1024px) {
+      .portal-wrapper { flex-direction: column; }
+      .portal-branding { padding: 40px 24px; flex: none; }
       .fintech-highlight-grid { grid-template-columns: 1fr; }
       .fintech-mini-grid { grid-template-columns: repeat(2, 1fr); }
       .status-summary-grid { grid-template-columns: repeat(2, 1fr); }
       .status-two-col { grid-template-columns: 1fr; }
       .dashboard-app-layout { flex-direction: column; }
-      .fintech-sidebar { width: 100%; }
+      .fintech-sidebar { width: 100%; padding: 16px; }
+      .fintech-main-panel { padding: 20px 16px; }
+      .btn-dual-row { flex-direction: column; }
     }
   </style>
 </head>
@@ -336,7 +340,7 @@
         <p class="brand-tagline">Plan • Track • Manage • Together</p>
         <p class="brand-desc">Efficiently manage committee budgets and events with live Google Sheets synchronization.</p>
       </div>
-      <div style="font-size: 0.85rem; color: #cbd5e1;">Mandal Tracker © 2026</div>
+      <div style="font-size: 0.85rem; color: #cbd5e1; margin-top: 20px;">Mandal Tracker © 2026</div>
     </div>
 
     <div class="portal-form-side">
@@ -434,7 +438,7 @@
         <div id="topActionArea">
           <div class="fintech-date-badge">
             <i class="fa-regular fa-calendar"></i>
-            <span id="liveDashboardDate">06 Oct 2026</span>
+            <span id="liveDashboardDate">10 Oct 2026</span>
           </div>
         </div>
       </div>
@@ -820,6 +824,21 @@
     let modalMode = "INCOME";
     let html5QrCode = null;
 
+    // Safe Storage helper for iPhone Safari private mode
+    function getStoredEvents() {
+      try {
+        return JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
+      } catch(e) {
+        return [];
+      }
+    }
+
+    function setStoredEvents(events) {
+      try {
+        localStorage.setItem('COMMITTEE_SAVED_EVENTS', JSON.stringify(events));
+      } catch(e) {}
+    }
+
     function cleanSheetId(str) {
       if (!str) return "";
       str = str.trim();
@@ -833,7 +852,7 @@
         const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
         window[callbackName] = function(data) {
           delete window[callbackName];
-          document.body.removeChild(script);
+          if (script.parentNode) script.parentNode.removeChild(script);
           resolve(data);
         };
         let queryString = Object.keys(params)
@@ -843,14 +862,14 @@
         script.src = `${SCRIPT_URL}?${queryString}&callback=${callbackName}`;
         script.onerror = function() {
           delete window[callbackName];
-          try { document.body.removeChild(script); } catch(e){}
+          if (script.parentNode) script.parentNode.removeChild(script);
           reject(new Error("Network Error"));
         };
         document.body.appendChild(script);
       });
     }
 
-    window.onload = function() {
+    window.addEventListener('DOMContentLoaded', () => {
       const dateOpts = { day: '2-digit', month: 'short', year: 'numeric' };
       document.getElementById('liveDashboardDate').innerText = new Date().toLocaleDateString('en-GB', dateOpts);
 
@@ -861,7 +880,7 @@
       } else {
         renderSavedEvents();
       }
-    };
+    });
 
     function showLoading(msg) {
       document.getElementById('loadingText').innerText = msg;
@@ -872,7 +891,7 @@
     }
 
     function renderSavedEvents() {
-      const events = JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
+      const events = getStoredEvents();
       const container = document.getElementById('eventsList');
       const wrap = document.getElementById('savedEventsContainer');
       container.innerHTML = '';
@@ -892,10 +911,10 @@
     }
 
     function saveEventToStorage(sheetId, name) {
-      let events = JSON.parse(localStorage.getItem('COMMITTEE_SAVED_EVENTS') || '[]');
+      let events = getStoredEvents();
       if (!events.some(e => e.id === sheetId)) {
         events.push({ id: sheetId, name: name });
-        localStorage.setItem('COMMITTEE_SAVED_EVENTS', JSON.stringify(events));
+        setStoredEvents(events);
       }
     }
 
@@ -938,21 +957,29 @@
     function toggleQRScanner() {
       const section = document.getElementById('scannerSection');
       section.style.display = 'block';
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
+      if (typeof Html5Qrcode === 'undefined') {
+        alert("Scanner library is still loading. Please try again.");
+        return;
       }
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          stopQRScanner();
-          connectToSheet(cleanSheetId(decodedText));
-        },
-        () => {}
-      ).catch(err => {
-        alert("Camera permission denied: " + err);
-        section.style.display = 'none';
-      });
+      try {
+        if (!html5QrCode) {
+          html5QrCode = new Html5Qrcode("reader");
+        }
+        html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText) => {
+            stopQRScanner();
+            connectToSheet(cleanSheetId(decodedText));
+          },
+          () => {}
+        ).catch(err => {
+          alert("Camera access denied or unavailable: " + err);
+          section.style.display = 'none';
+        });
+      } catch (err) {
+        alert("Camera error: " + err);
+      }
     }
 
     function stopQRScanner() {
@@ -1073,10 +1100,7 @@
         document.getElementById('pageSubHeading').innerText = "Detailed category breakdown and ledger statements";
         document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-chart-pie"></i>`;
         document.getElementById('topActionArea').innerHTML = `
-          <div class="fintech-date-badge">
-            <i class="fa-regular fa-calendar"></i>
-            <span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-          </div>
+          <div class="fintech-date-badge"><i class="fa-regular fa-calendar"></i><span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
         `;
         renderStatusReports();
       } else if (viewName === 'EXPORT') {
@@ -1085,10 +1109,7 @@
         document.getElementById('pageSubHeading').innerText = "Download offline audit copies and data backups";
         document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>`;
         document.getElementById('topActionArea').innerHTML = `
-          <div class="fintech-date-badge">
-            <i class="fa-regular fa-calendar"></i>
-            <span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-          </div>
+          <div class="fintech-date-badge"><i class="fa-regular fa-calendar"></i><span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
         `;
         renderBackupHistoryUI();
       } else if (viewName === 'SETTINGS') {
@@ -1097,10 +1118,7 @@
         document.getElementById('pageSubHeading').innerText = "System configurations and access controls";
         document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-gear"></i>`;
         document.getElementById('topActionArea').innerHTML = `
-          <div class="fintech-date-badge">
-            <i class="fa-regular fa-calendar"></i>
-            <span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-          </div>
+          <div class="fintech-date-badge"><i class="fa-regular fa-calendar"></i><span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
         `;
         renderSettingsSections();
       } else {
@@ -1109,10 +1127,7 @@
         document.getElementById('pageSubHeading').innerText = "Here's your committee budget overview";
         document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-users"></i>`;
         document.getElementById('topActionArea').innerHTML = `
-          <div class="fintech-date-badge">
-            <i class="fa-regular fa-calendar"></i>
-            <span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-          </div>
+          <div class="fintech-date-badge"><i class="fa-regular fa-calendar"></i><span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
         `;
       }
     }

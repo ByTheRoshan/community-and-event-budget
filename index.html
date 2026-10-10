@@ -202,7 +202,7 @@
     .history-item-row strong { font-size: 13px; color: #0f172a; }
     .history-item-row small { font-size: 11px; color: #64748b; }
 
-    /* SETTINGS - EXACT ANDROID APP REPLICA UI */
+    /* SETTINGS - EXACT ANDROID APP REPLICA */
     .app-setting-box {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -696,11 +696,11 @@
         </div>
       </div>
 
-      <!-- VIEW 6: SETTINGS (EXACT ANDROID APP REPLICA + LIVE SYNC) -->
+      <!-- VIEW 6: SETTINGS (EXACT ANDROID APP REPLICA + STRICT RBAC) -->
       <div id="viewSettingsSection" style="display: none; flex-direction: column; gap: 20px;">
         
         <!-- SECTION 1: APPLICATION SETTINGS -->
-        <div class="app-setting-box">
+        <div class="app-setting-box" id="secAppSettings">
           <h3>Application Settings</h3>
           <div>
             <div class="setting-lbl">Budget Name</div>
@@ -716,28 +716,28 @@
         </div>
 
         <!-- SECTION 2: MY ACCOUNT -->
-        <div class="app-setting-box">
+        <div class="app-setting-box" id="secMyAccount">
           <h3>My Account</h3>
           <div>
             <input type="text" class="setting-inp" id="setAccountUsername" placeholder="Username">
           </div>
-          <button class="btn-dark-pill" onclick="updateAccountUsername()">
+          <button class="btn-dark-pill" id="btnUpdateUsername" onclick="updateAccountUsername()">
             Update Username
           </button>
           
           <div style="margin-top: 8px;">
             <input type="password" class="setting-inp" id="setAccountPassword" placeholder="New Password">
           </div>
-          <button class="btn-dark-pill" onclick="updateAccountPassword()">
+          <button class="btn-dark-pill" id="btnUpdatePassword" onclick="updateAccountPassword()">
             Update Password
           </button>
         </div>
 
         <!-- SECTION 3: LEDGER HEADS -->
-        <div class="app-setting-box">
+        <div class="app-setting-box" id="secLedgerHeads">
           <div class="heads-section-header">
             <h3>Ledger Heads</h3>
-            <div style="display: flex; gap: 8px;">
+            <div id="headsActionButtonsGroup" style="display: flex; gap: 8px;">
               <button class="btn-orange-submit" style="padding: 8px 16px; font-size: 11px;" onclick="promptNewHead('INCOME')">
                 + Income Head
               </button>
@@ -1049,18 +1049,24 @@
       document.getElementById('viewExportSection').style.display = 'none';
       document.getElementById('viewSettingsSection').style.display = 'none';
 
+      const isUser = (activeRole === 'USER');
+
       if (viewName === 'INCOME') {
         document.getElementById('viewIncomeSection').style.display = 'flex';
         document.getElementById('pageTitleHeading').innerText = "Income";
         document.getElementById('pageSubHeading').innerText = "Manage and track all your income entries";
         document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i>`;
-        document.getElementById('topActionArea').innerHTML = `<button class="btn-top-action" onclick="openNewTxModal('INCOME')"><i class="fa-solid fa-plus"></i> New Income</button>`;
+        document.getElementById('topActionArea').innerHTML = isUser ? `
+          <div class="fintech-date-badge"><i class="fa-regular fa-calendar"></i><span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
+        ` : `<button class="btn-top-action" onclick="openNewTxModal('INCOME')"><i class="fa-solid fa-plus"></i> New Income</button>`;
       } else if (viewName === 'EXPENSE') {
         document.getElementById('viewExpenseSection').style.display = 'flex';
         document.getElementById('pageTitleHeading').innerText = "Expense";
         document.getElementById('pageSubHeading').innerText = "Manage and track all your expenditure entries";
         document.getElementById('pageAvatarIcon').innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i>`;
-        document.getElementById('topActionArea').innerHTML = `<button class="btn-top-action expense-mode" onclick="openNewTxModal('EXPENSE')"><i class="fa-solid fa-plus"></i> New Expense</button>`;
+        document.getElementById('topActionArea').innerHTML = isUser ? `
+          <div class="fintech-date-badge"><i class="fa-regular fa-calendar"></i><span>${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
+        ` : `<button class="btn-top-action expense-mode" onclick="openNewTxModal('EXPENSE')"><i class="fa-solid fa-plus"></i> New Expense</button>`;
       } else if (viewName === 'STATUS') {
         document.getElementById('viewStatusSection').style.display = 'flex';
         document.getElementById('pageTitleHeading').innerText = "Status & Reports";
@@ -1125,7 +1131,7 @@
       });
     }
 
-    /* RBAC APPLIED IN TABLE */
+    /* STRICT ROLE BASED ACCESS IN TABLES */
     function renderTableData(type, items) {
       const isInc = type === 'INCOME';
       const tbody = document.getElementById(isInc ? 'incomeTableBody' : 'expenseTableBody');
@@ -1138,7 +1144,7 @@
 
       const colors = ['#00c988', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#dc2626'];
 
-      // ROLE BASED PERMISSION CHECKS:
+      // ROLE BASED RULES:
       const isSuper = (activeRole === 'SUPERADMIN' || activeRole === 'SUPER_ADMIN');
       const isAdmin = (activeRole === 'ADMIN');
       const canEdit = isSuper || isAdmin;
@@ -1208,6 +1214,7 @@
     }
 
     function openNewTxModal(type) {
+      if (activeRole === 'USER') return alert("Permission Denied: User role cannot add transactions");
       modalMode = type;
       document.getElementById('editTxId').value = "";
       document.getElementById('editTxDate').value = "";
@@ -1228,6 +1235,7 @@
     }
 
     function openEditModal(txId) {
+      if (activeRole === 'USER') return alert("Permission Denied: User role cannot edit transactions");
       const target = currentData.transactions.find(t => t.id === txId);
       if (!target) return alert("Record not found!");
 
@@ -1260,6 +1268,7 @@
     }
 
     function submitModalTransaction() {
+      if (activeRole === 'USER') return alert("Permission Denied: User role cannot modify data");
       const editId = document.getElementById('editTxId').value;
       const head = document.getElementById('mTxHead').value;
       const narr = document.getElementById('mTxNarr').value.trim();
@@ -1287,7 +1296,8 @@
         amount: amt,
         mode: mode,
         date: txnDate,
-        createdBy: activeUsername
+        createdBy: activeUsername,
+        role: activeRole
       };
 
       apiCall(payload).then(res => {
@@ -1305,6 +1315,9 @@
     }
 
     function deleteTransaction(txId) {
+      if (activeRole !== 'SUPERADMIN' && activeRole !== 'SUPER_ADMIN') {
+        return alert("Permission Denied: Only Super Admin can delete transactions");
+      }
       if (!confirm("Are you sure you want to delete this entry?")) return;
 
       showLoading("Removing entry from Google Sheet...");
@@ -1313,7 +1326,8 @@
         sheetId: activeSheetId,
         id: txId,
         txId: txId,
-        username: activeUsername
+        username: activeUsername,
+        role: activeRole
       }).then(res => {
         if (res && res.success === false) {
           hideLoading();
@@ -1835,17 +1849,18 @@
       });
     }
 
-    /* --- REAL ANDROID SETTINGS REPLICA & RBAC ENGINE --- */
+    /* --- REAL SETTINGS RENDERING & USER RBAC LOCK --- */
     function renderSettingsSections() {
       const isSuper = (activeRole === 'SUPERADMIN' || activeRole === 'SUPER_ADMIN');
       const isAdmin = (activeRole === 'ADMIN');
+      const isUser = (activeRole === 'USER');
 
       // 1. App Settings
       const curEvent = currentData.eventName || (document.getElementById('activeEventBadgeTag') ? document.getElementById('activeEventBadgeTag').innerText.replace('Event: ', '') : 'bk');
       document.getElementById('setBudgetName').value = curEvent;
       document.getElementById('setOpeningBalance').value = currentData.openingBalance || 0;
 
-      // Lock App Settings for non-superadmin
+      // Lock Settings for non-superadmin
       if (!isSuper) {
         document.getElementById('setBudgetName').setAttribute('disabled', 'true');
         document.getElementById('setOpeningBalance').setAttribute('disabled', 'true');
@@ -1856,15 +1871,32 @@
         document.getElementById('btnSaveAppSettings').style.display = 'inline-block';
       }
 
-      // 2. My Account
+      // 2. My Account (USER Cannot update username or password)
       document.getElementById('setAccountUsername').value = activeUsername;
       document.getElementById('setAccountPassword').value = '';
+      if (isUser) {
+        document.getElementById('setAccountUsername').setAttribute('disabled', 'true');
+        document.getElementById('setAccountPassword').setAttribute('disabled', 'true');
+        document.getElementById('btnUpdateUsername').style.display = 'none';
+        document.getElementById('btnUpdatePassword').style.display = 'none';
+      } else {
+        document.getElementById('setAccountUsername').removeAttribute('disabled');
+        document.getElementById('setAccountPassword').removeAttribute('disabled');
+        document.getElementById('btnUpdateUsername').style.display = 'inline-block';
+        document.getElementById('btnUpdatePassword').style.display = 'inline-block';
+      }
 
       // 3. Ledger Heads
       const incBox = document.getElementById('listIncomeHeadsContainer');
       const expBox = document.getElementById('listExpenseHeadsContainer');
       incBox.innerHTML = '';
       expBox.innerHTML = '';
+
+      if (isUser) {
+        document.getElementById('headsActionButtonsGroup').style.display = 'none';
+      } else {
+        document.getElementById('headsActionButtonsGroup').style.display = 'flex';
+      }
 
       const allHeads = currentData.allHeads || [];
       allHeads.forEach(h => {
@@ -1876,10 +1908,10 @@
             <span class="head-badge-status ${h.status.toLowerCase()}">${h.status}</span>
           </div>
           <div style="display: flex; gap: 6px;">
-            ${(isSuper || isAdmin) ? `
+            ${(!isUser) ? `
               <button class="btn-sm-action" style="background:#e0f2fe; color:#0369a1;" onclick="promptEditHead('${h.id}', '${h.name}')">Edit</button>
               <button class="btn-sm-action" style="background:${h.status==='ACTIVE'?'#475569':'#15803d'}; color:#fff;" onclick="toggleHeadStatus('${h.id}', '${h.status}')">${h.status==='ACTIVE'?'Deactivate':'Activate'}</button>
-            ` : '<span style="font-size:11px; color:#94a3b8;">Protected</span>'}
+            ` : '<span style="font-size:11px; color:#94a3b8; font-weight:700;">Protected</span>'}
           </div>
         `;
         if (h.type === 'INCOME') incBox.appendChild(line);
@@ -1925,6 +1957,9 @@
     }
 
     function saveApplicationSettings() {
+      if (activeRole !== 'SUPERADMIN' && activeRole !== 'SUPER_ADMIN') {
+        return alert("Permission Denied: Only Super Admin can change settings");
+      }
       const bName = document.getElementById('setBudgetName').value.trim();
       const op = document.getElementById('setOpeningBalance').value.trim();
       if (!bName) return alert("Enter budget name");
@@ -1935,7 +1970,8 @@
         sheetId: activeSheetId,
         eventName: bName,
         openingBalance: op,
-        username: activeUsername
+        username: activeUsername,
+        role: activeRole
       }).then(res => {
         hideLoading();
         alert("Settings saved successfully!");
@@ -1945,6 +1981,7 @@
     }
 
     function updateAccountUsername() {
+      if (activeRole === 'USER') return alert("Permission Denied: User role cannot change username");
       const u = document.getElementById('setAccountUsername').value.trim();
       if (!u) return alert("Enter username");
       showLoading("Updating username in Google Sheet...");
@@ -1952,7 +1989,8 @@
         action: 'updateAccount',
         sheetId: activeSheetId,
         currentUsername: activeUsername,
-        newUsername: u
+        newUsername: u,
+        role: activeRole
       }).then(res => {
         hideLoading();
         alert("Username updated! Please log in again.");
@@ -1961,6 +1999,7 @@
     }
 
     function updateAccountPassword() {
+      if (activeRole === 'USER') return alert("Permission Denied: User role cannot change password");
       const p = document.getElementById('setAccountPassword').value.trim();
       if (!p) return alert("Enter new password");
       showLoading("Updating password in Google Sheet...");
@@ -1968,7 +2007,8 @@
         action: 'updateAccount',
         sheetId: activeSheetId,
         currentUsername: activeUsername,
-        newPassword: p
+        newPassword: p,
+        role: activeRole
       }).then(res => {
         hideLoading();
         alert("Password updated successfully!");
@@ -1977,38 +2017,68 @@
     }
 
     function promptNewHead(type) {
+      if (activeRole === 'USER') return alert("Permission Denied: User cannot add heads");
       const name = prompt("Enter " + type + " Head Name:");
-      if (!name) return;
+      if (!name || name.trim() === "") return;
       showLoading("Adding Ledger Head to Google Sheet...");
       apiCall({
         action: 'saveLedgerHead',
         sheetId: activeSheetId,
         headName: name.trim(),
         headType: type,
-        username: activeUsername
-      }).then(res => { hideLoading(); loadDashboard(); })
-        .catch(() => { hideLoading(); alert("Failed to add head"); });
+        username: activeUsername,
+        role: activeRole
+      }).then(res => { 
+        hideLoading(); 
+        alert("New Ledger Head added!");
+        loadDashboard(); 
+      }).catch(() => { 
+        hideLoading(); 
+        alert("Failed to add head"); 
+      });
+    }
+
+    function promptEditHead(rowId, currentName) {
+      if (activeRole === 'USER') return alert("Permission Denied: User cannot edit heads");
+      const newName = prompt("Edit Head Name:", currentName);
+      if (!newName || newName.trim() === "" || newName.trim() === currentName) return;
+
+      showLoading("Updating Ledger Head in Google Sheet...");
+      apiCall({
+        action: 'updateLedgerHead',
+        sheetId: activeSheetId,
+        headRow: rowId,
+        newName: newName.trim(),
+        username: activeUsername,
+        role: activeRole
+      }).then(res => {
+        hideLoading();
+        alert("Ledger Head updated successfully!");
+        loadDashboard();
+      }).catch(() => {
+        hideLoading();
+        alert("Failed to update Ledger Head");
+      });
     }
 
     function toggleHeadStatus(rowId, status) {
+      if (activeRole === 'USER') return alert("Permission Denied: User cannot toggle heads");
       showLoading("Updating head status...");
       apiCall({
         action: 'toggleLedgerHead',
         sheetId: activeSheetId,
         headRow: rowId,
         status: status,
-        username: activeUsername
+        username: activeUsername,
+        role: activeRole
       }).then(res => { hideLoading(); loadDashboard(); })
         .catch(() => { hideLoading(); alert("Failed to update head"); });
     }
 
-    function promptEditHead(rowId, currentName) {
-      const newName = prompt("Edit Head Name:", currentName);
-      if (!newName || newName === currentName) return;
-      alert("Note: Updating category will apply to upcoming entries.");
-    }
-
     function promptNewUser() {
+      if (activeRole !== 'SUPERADMIN' && activeRole !== 'SUPER_ADMIN') {
+        return alert("Permission Denied: Only Super Admin can create users");
+      }
       const u = prompt("Enter New Username:");
       if (!u) return;
       const p = prompt("Enter Password:");
@@ -2022,31 +2092,40 @@
         newUser: u.trim(),
         newPass: p.trim(),
         newRole: (r || "USER").toUpperCase(),
-        username: activeUsername
+        username: activeUsername,
+        role: activeRole
       }).then(res => { hideLoading(); loadDashboard(); })
         .catch(() => { hideLoading(); alert("Failed to create user"); });
     }
 
     function toggleUserStatus(uName, status) {
+      if (activeRole !== 'SUPERADMIN' && activeRole !== 'SUPER_ADMIN') {
+        return alert("Permission Denied: Only Super Admin can toggle users");
+      }
       showLoading("Updating user status...");
       apiCall({
         action: 'toggleUser',
         sheetId: activeSheetId,
         targetUser: uName,
         status: status,
-        username: activeUsername
+        username: activeUsername,
+        role: activeRole
       }).then(res => { hideLoading(); loadDashboard(); })
         .catch(() => { hideLoading(); alert("Failed to update user"); });
     }
 
     function deleteUserRow(uName) {
+      if (activeRole !== 'SUPERADMIN' && activeRole !== 'SUPER_ADMIN') {
+        return alert("Permission Denied: Only Super Admin can delete users");
+      }
       if (!confirm("Are you sure you want to delete user: " + uName + "?")) return;
       showLoading("Removing user from Google Sheet...");
       apiCall({
         action: 'deleteUser',
         sheetId: activeSheetId,
         targetUser: uName,
-        username: activeUsername
+        username: activeUsername,
+        role: activeRole
       }).then(res => { hideLoading(); loadDashboard(); })
         .catch(() => { hideLoading(); alert("Failed to delete user"); });
     }

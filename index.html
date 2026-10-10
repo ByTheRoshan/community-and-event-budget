@@ -841,10 +841,23 @@
 
     function cleanSheetId(str) {
       if (!str) return "";
-      str = str.trim();
-      if (str.includes('join=')) str = str.split('join=')[1].split('&')[0];
-      if (str.includes('/d/')) str = str.split('/d/')[1].split('/')[0];
-      return str.trim();
+      str = decodeURIComponent(str).trim();
+      
+      if (str.includes('join=')) {
+        str = str.split('join=')[1].split('&')[0];
+      }
+      if (str.includes('/d/')) {
+        str = str.split('/d/')[1].split('/')[0];
+      }
+      if (str.includes('id=')) {
+        str = str.split('id=')[1].split('&')[0];
+      }
+      
+      const match = str.match(/[-\w]{25,}/);
+      if (match) {
+        return match[0].trim();
+      }
+      return str.replace(/[^a-zA-Z0-9-_]/g, '').trim();
     }
 
     function apiCall(params) {
@@ -958,7 +971,7 @@
       const section = document.getElementById('scannerSection');
       section.style.display = 'block';
       if (typeof Html5Qrcode === 'undefined') {
-        alert("Scanner library is still loading. Please try again.");
+        alert("Scanner library is still loading, please try again.");
         return;
       }
       try {
@@ -970,7 +983,12 @@
           { fps: 10, qrbox: { width: 250, height: 250 } },
           (decodedText) => {
             stopQRScanner();
-            connectToSheet(cleanSheetId(decodedText));
+            const extractedId = cleanSheetId(decodedText);
+            if (!extractedId || extractedId.length < 20) {
+              alert("QR madhun invalid ID aala: " + decodedText);
+              return;
+            }
+            connectToSheet(extractedId);
           },
           () => {}
         ).catch(err => {

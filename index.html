@@ -1460,16 +1460,19 @@
       });
     }
 
-    /* BROWSER NATIVE PRINT - 100% MARATHI UNICODE SAFE */
+    /* EXACT ORIGINAL DESIGN - 100% MARATHI SUPPORT */
     function generateVoucherPDF(txId) {
       const t = currentData.transactions.find(x => x.id === txId);
       if (!t) return alert("Entry not found!");
 
       const isInc = t.type === 'INCOME';
-      const orgTitle = activeEventName.toUpperCase();
-      const themeColor = isInc ? '#16a34a' : '#dc2626';
+      const orgTitle = (activeEventName || 'BAALWADI').toUpperCase();
+      const themeColor = isInc ? '#16a34a' : '#b91c1c';
       const docTitle = isInc ? 'INCOME RECEIPT' : 'PAYMENT VOUCHER';
       const currentTime = new Date().toLocaleString('en-GB');
+
+      // Amount in words (Basic helper)
+      const amtNum = parseFloat(t.amount || 0);
 
       const printHtml = `
         <!DOCTYPE html>
@@ -1477,80 +1480,184 @@
         <head>
           <meta charset="utf-8">
           <title>${isInc ? 'Receipt_' : 'Voucher_'}${t.id}</title>
-          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
           <style>
-            @page { size: A4 portrait; margin: 15mm; }
-            * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Nirmala UI', 'Mangal', sans-serif; }
-            body { margin: 0; padding: 20px; display: flex; justify-content: center; background: #fff; }
-            .voucher-card {
+            @page {
+              size: A4 portrait;
+              margin: 10mm;
+            }
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+              font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Nirmala UI', sans-serif;
+            }
+            body {
+              background: #ffffff;
+              display: flex;
+              justify-content: center;
+              padding: 15px;
+            }
+            .voucher-frame {
               width: 100%;
-              max-width: 520px;
-              border: 2.5px solid ${themeColor};
-              border-radius: 20px;
-              padding: 30px 24px;
+              max-width: 580px;
+              min-height: 820px;
+              border: 3px solid ${themeColor};
+              border-radius: 26px;
+              padding: 40px 32px 28px 32px;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              background: #fff;
               position: relative;
             }
-            .header-title { text-align: center; font-size: 24px; font-weight: 800; color: ${themeColor}; margin: 0; }
-            .header-sub { text-align: center; font-size: 12px; color: #64748b; margin-top: 5px; }
-            .voucher-type { text-align: center; font-size: 15px; font-weight: 800; color: ${themeColor}; margin-top: 18px; letter-spacing: 0.5px; }
-            .dash-divider { border-top: 1.5px dashed ${themeColor}; margin: 14px 0 18px 0; }
-            .meta-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
-            .details-table { width: 100%; border-collapse: collapse; border: 1.2px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-top: 10px; }
-            .details-table td { padding: 12px 14px; border: 1px solid #e2e8f0; font-size: 13px; }
-            .col-lbl { width: 38%; font-weight: 700; color: #0f172a; }
-            .col-val { color: #1e293b; font-weight: 600; }
-            .amt-text { font-size: 18px; font-weight: 800; color: ${themeColor}; }
-            .sig-area { display: flex; justify-content: space-between; margin-top: 65px; padding: 0 15px; }
-            .sig-block { text-align: center; width: 170px; }
-            .sig-line { border-top: 1.2px solid #0f172a; margin-bottom: 8px; }
-            .sig-lbl { font-size: 12px; font-weight: 700; color: #0f172a; }
-            .footer-note { text-align: center; font-size: 10px; color: #94a3b8; margin-top: 45px; }
+            .title-org {
+              text-align: center;
+              font-size: 26px;
+              font-weight: 800;
+              color: ${themeColor};
+              letter-spacing: 0.5px;
+            }
+            .title-sub {
+              text-align: center;
+              font-size: 13px;
+              color: #475569;
+              margin-top: 6px;
+              font-weight: 500;
+            }
+            .title-doc {
+              text-align: center;
+              font-size: 16px;
+              font-weight: 800;
+              color: ${themeColor};
+              margin-top: 22px;
+              letter-spacing: 0.8px;
+            }
+            .dashed-sep {
+              border: none;
+              border-top: 2px dashed ${themeColor};
+              margin: 18px 0;
+            }
+            .meta-line {
+              display: flex;
+              justify-content: space-between;
+              font-size: 13px;
+              font-weight: 700;
+              color: #0f172a;
+              margin-bottom: 16px;
+            }
+            .table-box {
+              width: 100%;
+              border-collapse: collapse;
+              border: 1px solid #cbd5e1;
+            }
+            .table-box td {
+              padding: 14px 18px;
+              border: 1px solid #cbd5e1;
+              vertical-align: middle;
+            }
+            .td-label {
+              width: 36%;
+              font-size: 14px;
+              font-weight: 700;
+              color: #0f172a;
+            }
+            .td-val {
+              font-size: 14px;
+              font-weight: 600;
+              color: #0f172a;
+              line-height: 1.5;
+            }
+            .amount-val {
+              font-size: 22px;
+              font-weight: 800;
+              color: ${themeColor};
+            }
+            .amount-words {
+              font-size: 11px;
+              color: #64748b;
+              font-weight: 500;
+              margin-top: 3px;
+            }
+            .sign-container {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 80px;
+              padding: 0 20px;
+            }
+            .sign-item {
+              text-align: center;
+              width: 190px;
+            }
+            .sign-rule {
+              border-top: 1.5px solid #0f172a;
+              margin-bottom: 8px;
+            }
+            .sign-text {
+              font-size: 13px;
+              font-weight: 700;
+              color: #0f172a;
+            }
+            .foot-caption {
+              text-align: center;
+              font-size: 10px;
+              color: #94a3b8;
+              margin-top: 40px;
+            }
           </style>
         </head>
         <body>
-          <div class="voucher-card">
-            <h1 class="header-title">${orgTitle} 2026</h1>
-            <div class="header-sub">Central Festival & Cultural Organization</div>
-            <div class="voucher-type">${docTitle}</div>
-            <div class="dash-divider"></div>
-            
-            <div class="meta-row">
-              <div>Voucher No.: ${t.id}</div>
-              <div>Date: ${t.date || ''}</div>
+          <div class="voucher-frame">
+            <div>
+              <div class="title-org">${orgTitle}</div>
+              <div class="title-sub">Central Festival & Cultural Organization</div>
+              <div class="title-doc">${docTitle}</div>
+              <hr class="dashed-sep">
+
+              <div class="meta-line">
+                <div>Voucher No.: ${t.id}</div>
+                <div>Date: ${t.date || ''}</div>
+              </div>
+
+              <table class="table-box">
+                <tr>
+                  <td class="td-label">${isInc ? 'Received From:' : 'Paid To:'}</td>
+                  <td class="td-val">${t.narration || '-'}</td>
+                </tr>
+                <tr>
+                  <td class="td-label">Category / Head:</td>
+                  <td class="td-val">${t.head || '-'}</td>
+                </tr>
+                <tr>
+                  <td class="td-label">Payment Mode:</td>
+                  <td class="td-val">${t.mode || 'Cash'}</td>
+                </tr>
+                <tr>
+                  <td class="td-label">Total Amount:</td>
+                  <td class="td-val">
+                    <div class="amount-val">Rs. ${amtNum.toFixed(1)}</div>
+                  </td>
+                </tr>
+              </table>
             </div>
 
-            <table class="details-table">
-              <tr>
-                <td class="col-lbl">${isInc ? 'Received From:' : 'Paid To:'}</td>
-                <td class="col-val">${t.narration || '-'}</td>
-              </tr>
-              <tr>
-                <td class="col-lbl">Category / Head:</td>
-                <td class="col-val">${t.head || '-'}</td>
-              </tr>
-              <tr>
-                <td class="col-lbl">Payment Mode:</td>
-                <td class="col-val">${t.mode || 'Cash'}</td>
-              </tr>
-              <tr>
-                <td class="col-lbl">Total Amount:</td>
-                <td class="col-val"><span class="amt-text">₹ ${t.amount}</span></td>
-              </tr>
-            </table>
-
-            <div class="sig-area">
-              <div class="sig-block">
-                <div class="sig-line"></div>
-                <div class="sig-lbl">${isInc ? 'Payer Signature' : 'Receiver Signature'}</div>
+            <div>
+              <div class="sign-container">
+                <div class="sign-item">
+                  <div class="sign-rule"></div>
+                  <div class="sign-text">${isInc ? 'Payer Signature' : 'Receiver Signature'}</div>
+                </div>
+                <div class="sign-item">
+                  <div class="sign-rule"></div>
+                  <div class="sign-text">Authorized Signatory</div>
+                </div>
               </div>
-              <div class="sig-block">
-                <div class="sig-line"></div>
-                <div class="sig-lbl">Authorized Signatory</div>
-              </div>
-            </div>
 
-            <div class="footer-note">
-              This is an electronically generated official voucher. | System Date: ${currentTime}
+              <div class="foot-caption">
+                This is an electronically generated official voucher. | System Date: ${currentTime}
+              </div>
             </div>
           </div>
           <script>
@@ -1564,7 +1671,7 @@
 
       const printWin = window.open('', '_blank');
       if (!printWin) {
-        alert("Popup blocked! Browser setting madhun popups allow kara.");
+        alert("Popup block zala ahe, please popups allow kara.");
         return;
       }
       printWin.document.open();
